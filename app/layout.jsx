@@ -2,10 +2,7 @@ import { Rubik } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import dynamic from "next/dynamic";
-
-const PostHogPageView = dynamic(() => import("@/components/PostHogPageView"), {
-  ssr: false,
-});
+import PostHogPageView from "@/components/PostHogPageView";
 
 const rubik = Rubik({
   subsets: ["latin"],
