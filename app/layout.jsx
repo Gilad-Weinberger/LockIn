@@ -1,8 +1,6 @@
 import { Rubik } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import dynamic from "next/dynamic";
-import PostHogPageView from "@/components/PostHogPageView";
 
 const rubik = Rubik({
   subsets: ["latin"],
@@ -19,10 +17,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${rubik.className}`}>
-        <Providers>
-          <PostHogPageView />
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
