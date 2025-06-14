@@ -1,6 +1,7 @@
 import { Rubik } from "next/font/google";
 import "./globals.css";
-import { PostHogProvider } from "./providers";
+import { Providers } from "./providers";
+
 const rubik = Rubik({
   subsets: ["latin"],
   weights: ["300", "400", "500", "600", "700"],
@@ -15,9 +16,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${rubik.className}`}>
-        <PostHogProvider>
-          {children}
-        </PostHogProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
