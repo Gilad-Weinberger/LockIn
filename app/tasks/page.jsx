@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import TaskForm from "@/components/tasks/TaskForm";
 import TaskList from "@/components/tasks/TaskList";
 import { NavigationButton } from "@/components/ui/Icons";
+import LogoutButton from "@/components/ui/LogoutButton";
 
 const Page = () => {
   const [open, setOpen] = useState(false);
@@ -63,6 +64,7 @@ const Page = () => {
       >
         {open ? "×" : "+"}
       </button>
+      <LogoutButton />
     </div>
   );
 };

@@ -12,6 +12,7 @@ import {
   CalendarEventModal,
 } from "@/components/calendar";
 import { NavigationButton } from "@/components/ui/Icons";
+import LogoutButton from "@/components/ui/LogoutButton";
 
 const CalendarPage = () => {
   const { tasks: allTasks, isLoading, hasError } = useTasks();
@@ -237,6 +238,7 @@ const CalendarPage = () => {
         selectedDate={selectedDate}
         tasks={scheduledTasks}
       />
+      <LogoutButton />
     </div>
   );
 };

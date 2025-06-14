@@ -13,6 +13,7 @@ import {
   MatrixLegend,
 } from "@/components/matrix";
 import { NavigationButton } from "@/components/ui/Icons";
+import LogoutButton from "@/components/ui/LogoutButton";
 import {
   getTasksExcludingDelete,
   haveTasksChanged,
@@ -211,6 +212,7 @@ const MatrixPage = () => {
           onTaskMove={handleTaskMove}
         />
       </div>
+      <LogoutButton />
     </div>
   );
 };
