@@ -14,6 +14,7 @@ const DropdownMenu = () => {
 
   // Check if we're on the settings page
   const isOnSettingsPage = pathname === "/settings";
+  const isOnFeedbackPage = pathname === "/feedback";
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -72,7 +73,11 @@ const DropdownMenu = () => {
 
   const handleFeedback = () => {
     setIsOpen(false);
-    router.push("/feedback");
+    if (isOnFeedbackPage) {
+      router.push("/tasks");
+    } else {
+      router.push("/feedback");
+    }
   };
 
   // Icons
@@ -141,8 +146,11 @@ const DropdownMenu = () => {
 
             <div className="border-l border-gray-200 h-6"></div>
 
-            <MenuButton onClick={handleFeedback} icon={feedbackIcon}>
-              Feedback
+            <MenuButton
+              onClick={handleFeedback}
+              icon={isOnFeedbackPage ? tasksIcon : feedbackIcon}
+            >
+              {isOnFeedbackPage ? "Tasks" : "Feedback"}
             </MenuButton>
 
             <div className="border-l border-gray-200 h-6"></div>
