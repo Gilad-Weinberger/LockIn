@@ -1,8 +1,19 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import {
+  updateTask,
+  CATEGORY_COLORS,
+  UNCATEGORIZED_COLOR,
+} from "@/lib/functions/taskFunctions";
+import CalendarTaskForm from "./CalendarTaskForm";
 
 const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
+  const [editingTask, setEditingTask] = useState(null);
+  const { userData } = useAuth();
+  const categories = userData?.categories || [];
+
   const dayTasks = useMemo(() => {
     if (!selectedDate || !tasks || tasks.length === 0) return [];
 
@@ -59,6 +70,47 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
       });
   }, [selectedDate, tasks]);
 
+  // Helper function to get category border color
+  const getCategoryBorderColor = (category) => {
+    if (!category) return "border-gray-400";
+
+    const categoryIndex = categories.findIndex((cat) => cat === category);
+    if (categoryIndex === -1) return "border-gray-400";
+
+    return CATEGORY_COLORS[categoryIndex % CATEGORY_COLORS.length];
+  };
+
+  // Helper function to get category background color
+  const getCategoryBgColor = (category, isDone) => {
+    if (isDone) return "bg-green-50";
+
+    if (!category) return "bg-gray-50";
+
+    const categoryIndex = categories.findIndex((cat) => cat === category);
+    if (categoryIndex === -1) return "bg-gray-50";
+
+    const colorIndex = categoryIndex % CATEGORY_COLORS.length;
+    const bgColors = [
+      "bg-blue-50",
+      "bg-pink-50",
+      "bg-green-50",
+      "bg-yellow-50",
+      "bg-purple-50",
+      "bg-red-50",
+      "bg-indigo-50",
+      "bg-teal-50",
+      "bg-orange-50",
+      "bg-cyan-50",
+      "bg-lime-50",
+      "bg-amber-50",
+      "bg-fuchsia-50",
+      "bg-emerald-50",
+      "bg-sky-50",
+    ];
+
+    return bgColors[colorIndex];
+  };
+
   const formatDate = (date) => {
     if (!date) return "";
     return date.toLocaleDateString("en-US", {
@@ -67,6 +119,10 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTask(task);
   };
 
   if (!isOpen) return null;
@@ -111,13 +167,10 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
                   className={`p-4 rounded-lg border-l-4 ${
                     task.isDone
                       ? "bg-green-50 border-green-400"
-                      : task.priority === "do"
-                      ? "bg-red-50 border-red-400"
-                      : task.priority === "plan"
-                      ? "bg-yellow-50 border-yellow-400"
-                      : task.priority === "delegate"
-                      ? "bg-blue-50 border-blue-400"
-                      : "bg-gray-50 border-gray-400"
+                      : `${getCategoryBgColor(
+                          task.category,
+                          task.isDone
+                        )} ${getCategoryBorderColor(task.category)}`
                   }`}
                 >
                   <div className="flex items-start justify-between">
@@ -126,13 +179,7 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
                         className={`font-medium ${
                           task.isDone
                             ? "text-green-800 line-through"
-                            : task.priority === "do"
-                            ? "text-red-800"
-                            : task.priority === "plan"
-                            ? "text-yellow-800"
-                            : task.priority === "delegate"
-                            ? "text-blue-800"
-                            : "text-gray-800"
+                            : "text-gray-900"
                         }`}
                       >
                         {task.title}
@@ -142,39 +189,31 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
                           {task.description}
                         </p>
                       )}
-                      <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                        {(task.startDate || task.time) && (
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
+                        {task.startDate && (
                           <span className="flex items-center">
                             <ClockIcon />
                             <span className="ml-1">
-                              {task.startDate
-                                ? (() => {
-                                    const startDate = task.startDate.toDate
-                                      ? task.startDate.toDate()
-                                      : new Date(task.startDate);
-                                    const endDate = task.endDate
-                                      ? task.endDate.toDate
-                                        ? task.endDate.toDate()
-                                        : new Date(task.endDate)
-                                      : null;
-                                    const startTime =
-                                      startDate.toLocaleTimeString("en-US", {
-                                        hour: "numeric",
-                                        minute: "2-digit",
-                                        hour12: true,
-                                      });
-                                    const endTime = endDate
-                                      ? endDate.toLocaleTimeString("en-US", {
-                                          hour: "numeric",
-                                          minute: "2-digit",
-                                          hour12: true,
-                                        })
-                                      : null;
-                                    return endTime
-                                      ? `${startTime} - ${endTime}`
-                                      : startTime;
-                                  })()
-                                : task.time}
+                              {new Date(
+                                task.startDate.toDate
+                                  ? task.startDate.toDate()
+                                  : task.startDate
+                              ).toLocaleTimeString("en-US", {
+                                hour: "numeric",
+                                minute: "2-digit",
+                                hour12: true,
+                              })}
+                              {task.endDate &&
+                                " - " +
+                                  new Date(
+                                    task.endDate.toDate
+                                      ? task.endDate.toDate()
+                                      : task.endDate
+                                  ).toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}
                             </span>
                           </span>
                         )}
@@ -184,28 +223,23 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
                             <span className="ml-1">{task.category}</span>
                           </span>
                         )}
-                        {task.priority && (
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              task.priority === "do"
-                                ? "bg-red-100 text-red-700"
-                                : task.priority === "plan"
-                                ? "bg-yellow-100 text-yellow-700"
-                                : task.priority === "delegate"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-gray-100 text-gray-700"
-                            }`}
-                          >
-                            {task.priority.toUpperCase()}
-                          </span>
-                        )}
                       </div>
                     </div>
-                    {task.isDone && (
-                      <div className="flex-shrink-0 ml-3">
-                        <CheckIcon />
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 ml-3">
+                      {task.isDone && (
+                        <div className="flex-shrink-0">
+                          <CheckIcon />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => handleEditTask(task)}
+                        className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-100 rounded transition-all duration-200"
+                        aria-label="Edit task"
+                        title="Edit task"
+                      >
+                        <EditIcon />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -226,6 +260,13 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
           </div>
         </div>
       </div>
+
+      {/* Edit Task Modal */}
+      <CalendarTaskForm
+        open={!!editingTask}
+        onClose={() => setEditingTask(null)}
+        task={editingTask}
+      />
     </div>
   );
 };
@@ -233,15 +274,16 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
 // Icons
 const CloseIcon = () => (
   <svg
-    className="w-6 h-6"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
-    stroke="currentColor"
     viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-5 h-5"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
       d="M6 18L18 6M6 6l12 12"
     />
   </svg>
@@ -249,64 +291,90 @@ const CloseIcon = () => (
 
 const CalendarIcon = () => (
   <svg
-    className="w-12 h-12 mx-auto text-gray-400"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
-    stroke="currentColor"
     viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    className="w-12 h-12 mx-auto text-gray-400"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={1}
-      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5a2.25 2.25 0 002.25-2.25m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5a2.25 2.25 0 012.25 2.25v7.5"
     />
   </svg>
 );
 
 const ClockIcon = () => (
   <svg
-    className="w-3 h-3"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
-    stroke="currentColor"
     viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-4 h-4"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
     />
   </svg>
 );
 
 const TagIcon = () => (
   <svg
-    className="w-3 h-3"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
-    stroke="currentColor"
     viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-4 h-4"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
-      d="M7 7h.01M7 3h5l1.586 1.586a2 2 0 010 2.828l-6.586 6.586a2 2 0 01-2.828 0l-6.586-6.586a2 2 0 010-2.828L3 7z"
+      d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
+    />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6 6h.008v.008H6V6z"
     />
   </svg>
 );
 
 const CheckIcon = () => (
   <svg
-    className="w-5 h-5 text-green-600"
+    xmlns="http://www.w3.org/2000/svg"
     fill="none"
-    stroke="currentColor"
     viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-5 h-5 text-green-600"
   >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
-      d="M5 13l4 4L19 7"
+      d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+    />
+  </svg>
+);
+
+const EditIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-4 h-4"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
     />
   </svg>
 );
