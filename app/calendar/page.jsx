@@ -40,6 +40,7 @@ const CalendarPage = () => {
 
   // Auto-schedule only future tasks when page loads or tasks change
   useEffect(() => {
+    // Add a ref to track scheduling attempts to prevent excessive calls
     const scheduleTasksAuto = async () => {
       if (!user || isLoading || isScheduling) return;
 
@@ -63,10 +64,11 @@ const CalendarPage = () => {
         return prioritizedTime > scheduledTime;
       });
 
-      if (
-        futureUnscheduledTasks.length === 0 &&
-        futureTasksNeedingRescheduling.length === 0
-      ) {
+      const totalTasksNeedingScheduling =
+        futureUnscheduledTasks.length + futureTasksNeedingRescheduling.length;
+
+      if (totalTasksNeedingScheduling === 0) {
+        console.log("No tasks need auto-scheduling");
         return;
       }
 
@@ -88,10 +90,17 @@ const CalendarPage = () => {
       }
     };
 
-    // Debounce the scheduling to avoid excessive API calls
-    const timeoutId = setTimeout(scheduleTasksAuto, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [user, allTasks, isLoading]);
+    // Increase debounce time and only schedule if we have tasks that need it
+    const hasTasksNeedingScheduling = allTasks.some(
+      (task) =>
+        !task.isDone && (!task.startDate || !task.endDate) && isFutureTask(task)
+    );
+
+    if (hasTasksNeedingScheduling) {
+      const timeoutId = setTimeout(scheduleTasksAuto, 3000); // Increased to 3 seconds
+      return () => clearTimeout(timeoutId);
+    }
+  }, [user, allTasks.length, isLoading]); // Changed dependency to allTasks.length instead of allTasks object
 
   // Manual scheduling function for all future tasks (triggered by button)
   const handleManualSchedule = async () => {

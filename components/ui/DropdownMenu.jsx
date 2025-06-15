@@ -140,12 +140,12 @@ const DropdownMenu = () => {
       {/* Three dots button - smaller */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-10 h-10 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-10 h-10 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-all duration-200 outline-none ring-2 ring-blue-500"
         aria-label="Menu"
         aria-expanded={isOpen}
       >
         <svg
-          className="w-4 h-4 text-gray-600"
+          className="w-5 h-5 text-gray-600"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
