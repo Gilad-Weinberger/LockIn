@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { signOutUser } from "@/lib/auth";
 import MenuButton from "./MenuButton";
 
@@ -9,7 +9,11 @@ const DropdownMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const dropdownRef = useRef(null);
+
+  // Check if we're on the settings page
+  const isOnSettingsPage = pathname === "/settings";
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -57,10 +61,13 @@ const DropdownMenu = () => {
     }
   };
 
-  const handleSettings = () => {
+  const handleNavigation = () => {
     setIsOpen(false);
-    // TODO: Navigate to settings page when it's created
-    console.log("Settings clicked - page not implemented yet");
+    if (isOnSettingsPage) {
+      router.push("/tasks");
+    } else {
+      router.push("/settings");
+    }
   };
 
   // Icons
@@ -77,6 +84,17 @@ const DropdownMenu = () => {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </svg>
+  );
+
+  const tasksIcon = (
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>
   );
@@ -98,8 +116,11 @@ const DropdownMenu = () => {
       {isOpen && (
         <div className="absolute -bottom-0.5 left-12 bg-white rounded-md shadow-lg border border-gray-200 py-1.5 px-1.5 animate-in fade-in slide-in-from-left-2 duration-200">
           <div className="flex items-center gap-1">
-            <MenuButton onClick={handleSettings} icon={settingsIcon}>
-              Settings
+            <MenuButton
+              onClick={handleNavigation}
+              icon={isOnSettingsPage ? tasksIcon : settingsIcon}
+            >
+              {isOnSettingsPage ? "Tasks" : "Settings"}
             </MenuButton>
 
             <div className="border-l border-gray-200 h-6"></div>
