@@ -1,7 +1,11 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { createTask, updateTask } from "@/lib/functions/taskFunctions";
+import {
+  createTask,
+  updateTask,
+  formatDateTimeLocal,
+} from "@/lib/functions/taskFunctions";
 
 const TaskForm = ({ open, onClose, task }) => {
   const [title, setTitle] = useState("");
@@ -18,7 +22,7 @@ const TaskForm = ({ open, onClose, task }) => {
   useEffect(() => {
     if (task) {
       setTitle(task.title || "");
-      setDate(task.taskDate || "");
+      setDate(formatDateTimeLocal(task.taskDate) || "");
       setCategory(task.category || "");
       setTaskType(task.type || "deadline");
       setIsDone(typeof task.isDone === "boolean" ? task.isDone : false);
@@ -128,8 +132,10 @@ const TaskForm = ({ open, onClose, task }) => {
             ref={titleInputRef}
           />
           <input
-            type="date"
-            placeholder={taskType === "deadline" ? "Due Date" : "Event Date"}
+            type="datetime-local"
+            placeholder={
+              taskType === "deadline" ? "Due Date & Time" : "Event Date & Time"
+            }
             value={date}
             onChange={(e) => setDate(e.target.value)}
             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"

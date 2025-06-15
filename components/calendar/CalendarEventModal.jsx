@@ -37,7 +37,7 @@ const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
           return startDate <= selectedDateEnd && endDate >= selectedDateStart;
         }
 
-        // Fallback to taskDate for backward compatibility
+        // Fallback to taskDate for backward compatibility (now handles full timestamps)
         if (!task.taskDate) return false;
         const taskDate = new Date(task.taskDate);
         return (

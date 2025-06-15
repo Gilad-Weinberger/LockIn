@@ -33,9 +33,8 @@ const CalendarPage = () => {
   const isFutureTask = (task) => {
     if (!task.taskDate) return false;
     const taskDate = new Date(task.taskDate);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to beginning of today
-    return taskDate >= today;
+    const now = new Date();
+    return taskDate >= now;
   };
 
   // Auto-schedule only future tasks when page loads or tasks change

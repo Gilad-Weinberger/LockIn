@@ -67,7 +67,7 @@ const CalendarMonthView = ({ currentDate, tasks, onDateClick }) => {
         return startDate <= currentDateEnd && endDate >= currentDateStart;
       }
 
-      // Fallback to taskDate if startDate/endDate not available (shouldn't happen for scheduled tasks)
+      // Fallback to taskDate if startDate/endDate not available (now handles full timestamps)
       if (!task.taskDate) return false;
       const taskDate = new Date(task.taskDate);
       return (
