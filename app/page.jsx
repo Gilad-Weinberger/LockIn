@@ -1,9 +1,27 @@
-import Image from "next/image";
+import {
+  Navbar,
+  HeroSection,
+  HowItWorks,
+  Features,
+  Testimonials,
+  Pricing,
+  FAQ,
+  Footer
+} from "@/components/home";
 
 export default function Home() {
   return (
-    <div>
-      <h1>Hello World</h1>
+    <div className="min-h-screen">
+      <Navbar />
+      <main>
+        <HeroSection />
+        <HowItWorks />
+        <Features />
+        <Testimonials />
+        <Pricing />
+        <FAQ />
+      </main>
+      <Footer />
     </div>
   );
 }
