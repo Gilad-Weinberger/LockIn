@@ -65,7 +65,7 @@ const Page = () => {
         />
         <button
           onClick={() => setOpen((prev) => !prev)}
-          className="fixed bottom-20 right-8 z-50 w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl shadow-lg hover:bg-blue-700 transition focus:outline-none"
+          className="fixed bottom-10 right-8 z-50 w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-4xl shadow-lg hover:bg-blue-700 transition focus:outline-none cursor-pointer"
           aria-label={open ? "Close form" : "Add task"}
         >
           {open ? "×" : "+"}
