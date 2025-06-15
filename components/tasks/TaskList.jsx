@@ -159,9 +159,19 @@ const TaskList = ({ onEdit }) => {
   if (hasError)
     return <div className="text-center text-red-500 py-8">{hasError}</div>;
 
+  // Create a combined array of categories and uncategorized with the add button positioned correctly
+  const allItems = [...categories];
+  if (uncategorized.length > 0) {
+    allItems.push("uncategorized");
+  }
+
+  // Insert the add button at position 3 (4th element) if there are 4+ items, otherwise at the end
+  const addButtonPosition = allItems.length >= 4 ? 3 : allItems.length;
+  allItems.splice(addButtonPosition, 0, "add-category");
+
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 max-w-6xl mx-auto mt-8 px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-7xl mx-auto mt-8 px-4">
         {hasUndoneTasks && (
           <button
             className="fixed right-8 top-1/2 -translate-y-1/2 z-40 bg-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-blue-700 transition focus:outline-none cursor-pointer"
@@ -171,105 +181,127 @@ const TaskList = ({ onEdit }) => {
             <span className="text-2xl">&gt;</span>
           </button>
         )}
-        {categories.map((cat, idx) => (
-          <div
-            key={cat}
-            className={`flex-1 bg-gray-50 rounded-lg border-t-4 ${
-              CATEGORY_COLORS[idx % CATEGORY_COLORS.length]
-            } shadow p-4 min-h-[300px]`}
-          >
-            <div className="flex items-center justify-between mb-2 group">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-lg">{cat}</span>
-                <span className="text-xs bg-gray-200 rounded px-2 py-0.5">
-                  {tasksByCategory[cat].length}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                <button
-                  onClick={() => handleEditCategory(cat)}
-                  className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-100 rounded transition-all duration-200"
-                  aria-label={`Edit ${cat} category`}
-                  title={`Edit ${cat} category`}
-                >
-                  <EditIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteCategory(cat)}
-                  className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded transition-all duration-200"
-                  aria-label={`Delete ${cat} category`}
-                  title={`Delete ${cat} category`}
-                >
-                  <DeleteIcon className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <AnimatePresence>
-                {sortTasksByCompletion(tasksByCategory[cat]).length === 0 ? (
-                  <div className="text-center text-gray-400">No tasks</div>
-                ) : (
-                  sortTasksByCompletion(tasksByCategory[cat]).map((task) => (
-                    <motion.div
-                      key={task.id}
-                      layout
-                      initial={{ opacity: 0, x: 40 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -40 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 40,
-                      }}
-                    >
-                      <TaskCard task={task} onEdit={onEdit} />
-                    </motion.div>
-                  ))
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        ))}
-        {uncategorized.length > 0 && (
-          <div
-            className={`flex-1 bg-gray-50 rounded-lg border-t-4 ${UNCATEGORIZED_COLOR} shadow p-4 min-h-[300px]`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              <span className="font-semibold text-lg">Uncategorized</span>
-              <span className="text-xs bg-gray-200 rounded px-2 py-0.5">
-                {uncategorized.length}
-              </span>
-            </div>
-            <div className="space-y-4">
-              <AnimatePresence>
-                {sortTasksByCompletion(uncategorized).map((task) => (
-                  <motion.div
-                    key={task.id}
-                    layout
-                    initial={{ opacity: 0, x: 40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -40 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                  >
-                    <TaskCard task={task} onEdit={onEdit} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
 
-        {/* Add Category Button - appears at the end of the categories */}
-        <div className="flex-1 bg-gray-50 rounded-lg border-t-4 border-dashed border-gray-300 shadow p-4 min-h-[300px] flex items-center justify-center">
-          <button
-            onClick={handleAddCategory}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
-            aria-label="Add new category"
-          >
-            <span className="text-xl">+</span>
-            Add Category
-          </button>
-        </div>
+        {allItems.map((item, idx) => {
+          // Add Category Button
+          if (item === "add-category") {
+            return (
+              <div
+                key="add-category"
+                className="bg-gray-50 rounded-lg border-t-4 border-dashed border-gray-300 shadow p-4 min-h-[300px] flex items-center justify-center"
+              >
+                <button
+                  onClick={handleAddCategory}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
+                  aria-label="Add new category"
+                >
+                  <span className="text-xl">+</span>
+                  Add Category
+                </button>
+              </div>
+            );
+          }
+
+          // Uncategorized tasks
+          if (item === "uncategorized") {
+            return (
+              <div
+                key="uncategorized"
+                className={`bg-gray-50 rounded-lg border-t-4 ${UNCATEGORIZED_COLOR} shadow p-4 min-h-[300px]`}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-semibold text-lg">Uncategorized</span>
+                  <span className="text-xs bg-gray-200 rounded px-2 py-0.5">
+                    {uncategorized.length}
+                  </span>
+                </div>
+                <div className="space-y-4">
+                  <AnimatePresence>
+                    {sortTasksByCompletion(uncategorized).map((task) => (
+                      <motion.div
+                        key={task.id}
+                        layout
+                        initial={{ opacity: 0, x: 40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -40 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 40,
+                        }}
+                      >
+                        <TaskCard task={task} onEdit={onEdit} />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            );
+          }
+
+          // Regular category
+          const cat = item;
+          const categoryIndex = categories.indexOf(cat);
+          return (
+            <div
+              key={cat}
+              className={`bg-gray-50 rounded-lg border-t-4 ${
+                CATEGORY_COLORS[categoryIndex % CATEGORY_COLORS.length]
+              } shadow p-4 min-h-[300px]`}
+            >
+              <div className="flex items-center justify-between mb-2 group">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-lg">{cat}</span>
+                  <span className="text-xs bg-gray-200 rounded px-2 py-0.5">
+                    {tasksByCategory[cat].length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <button
+                    onClick={() => handleEditCategory(cat)}
+                    className="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-100 rounded transition-all duration-200"
+                    aria-label={`Edit ${cat} category`}
+                    title={`Edit ${cat} category`}
+                  >
+                    <EditIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCategory(cat)}
+                    className="p-1 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded transition-all duration-200"
+                    aria-label={`Delete ${cat} category`}
+                    title={`Delete ${cat} category`}
+                  >
+                    <DeleteIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <AnimatePresence>
+                  {sortTasksByCompletion(tasksByCategory[cat]).length === 0 ? (
+                    <div className="text-center text-gray-400">No tasks</div>
+                  ) : (
+                    sortTasksByCompletion(tasksByCategory[cat]).map((task) => (
+                      <motion.div
+                        key={task.id}
+                        layout
+                        initial={{ opacity: 0, x: 40 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -40 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 40,
+                        }}
+                      >
+                        <TaskCard task={task} onEdit={onEdit} />
+                      </motion.div>
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <DeleteCategoryDialog
