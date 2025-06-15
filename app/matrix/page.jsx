@@ -167,6 +167,43 @@ const MatrixPage = () => {
     hasRunPrioritization.current = false; // Allow retry
   };
 
+  // Handle manual re-prioritization
+  const handleRePrioritize = async () => {
+    if (!user || !tasks.length || isPrioritizing) return;
+
+    setIsPrioritizing(true);
+    setPrioritizeError("");
+    hasRunPrioritization.current = false; // Reset to allow re-prioritization
+
+    try {
+      // Force re-prioritization of ALL tasks
+      const result = await prioritizeTasks(tasks, user.uid);
+      console.log("Manual re-prioritization result:", result);
+
+      // Extract reasoning if available, otherwise use existing format
+      let finalResult;
+      if (result.reasoning) {
+        // New format with reasoning
+        const { reasoning, ...prioritizationData } = result;
+        finalResult = prioritizationData;
+      } else {
+        // Old format without reasoning
+        finalResult = result;
+      }
+
+      setPrioritizedTasks(finalResult);
+
+      // Store the current tasks hash after successful prioritization
+      storeCurrentTasksHash(tasks, user.uid);
+      hasRunPrioritization.current = true;
+    } catch (error) {
+      console.error("Manual re-prioritization error:", error);
+      setPrioritizeError(`Failed to re-prioritize tasks: ${error.message}`);
+    } finally {
+      setIsPrioritizing(false);
+    }
+  };
+
   // Loading state
   if (isLoading || isPrioritizing) {
     return (
@@ -216,7 +253,10 @@ const MatrixPage = () => {
 
         <div className="max-w-5xl w-full flex gap-6 items-center justify-center">
           <MatrixErrorBanner error={prioritizeError} onRetry={handleRetry} />
-          <MatrixLegend />
+          <MatrixLegend
+            isPrioritizing={isPrioritizing}
+            onRePrioritize={handleRePrioritize}
+          />
           <MatrixContainer
             tasks={tasks}
             prioritizedTasks={prioritizedTasks}
