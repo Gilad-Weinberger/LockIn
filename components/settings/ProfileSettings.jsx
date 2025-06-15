@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { updateDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { updateUserProfile } from "@/lib/functions/userFunctions";
 
 const ProfileSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
@@ -36,16 +35,15 @@ const ProfileSettings = () => {
     
     setIsSaving(true);
     try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
+      await updateUserProfile(user.uid, {
         fullName: formData.fullName,
-        updatedAt: new Date().toISOString(),
       });
       
       await refreshUserData();
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating profile:", error);
+      alert("Failed to update profile. Please try again.");
     } finally {
       setIsSaving(false);
     }

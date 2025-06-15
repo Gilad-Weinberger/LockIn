@@ -57,7 +57,9 @@ const HowItWorks = () => {
 
                   {/* Examples */}
                   <div className={`${step.bgColor} rounded-lg p-3 sm:p-4`}>
-                    <p className={`text-xs sm:text-sm font-medium ${step.textColor} mb-2`}>
+                    <p
+                      className={`text-xs sm:text-sm font-medium ${step.textColor} mb-2`}
+                    >
                       Examples:
                     </p>
                     <ul className="space-y-1">

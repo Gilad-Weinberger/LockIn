@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { updateDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { updatePrioritizingRules } from "@/lib/functions/userFunctions";
 
 const PrioritizingRulesSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
@@ -22,16 +21,12 @@ const PrioritizingRulesSettings = () => {
 
     setIsSaving(true);
     try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        prioritizingRules: prioritizingRules,
-        updatedAt: new Date().toISOString(),
-      });
-
+      await updatePrioritizingRules(user.uid, prioritizingRules);
       await refreshUserData();
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating prioritizing rules:", error);
+      alert("Failed to update prioritizing rules. Please try again.");
     } finally {
       setIsSaving(false);
     }

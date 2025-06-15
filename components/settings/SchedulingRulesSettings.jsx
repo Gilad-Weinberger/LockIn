@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { updateDoc, doc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { updateSchedulingRules } from "@/lib/functions/userFunctions";
 
 const SchedulingRulesSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
@@ -22,16 +21,12 @@ const SchedulingRulesSettings = () => {
 
     setIsSaving(true);
     try {
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        schedulingRules: schedulingRules,
-        updatedAt: new Date().toISOString(),
-      });
-
+      await updateSchedulingRules(user.uid, schedulingRules);
       await refreshUserData();
       setIsEditing(false);
     } catch (error) {
       console.error("Error updating scheduling rules:", error);
+      alert("Failed to update scheduling rules. Please try again.");
     } finally {
       setIsSaving(false);
     }

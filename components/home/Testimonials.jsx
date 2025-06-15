@@ -10,7 +10,10 @@ const Testimonials = () => {
   const duplicatedTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section id="testimonials" className="py-16 sm:py-24 bg-white overflow-hidden">
+    <section
+      id="testimonials"
+      className="py-16 sm:py-24 bg-white overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center mb-12 sm:mb-16">
@@ -96,25 +99,33 @@ const Testimonials = () => {
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               2,500+
             </div>
-            <div className="text-sm sm:text-base text-blue-500">Happy Users</div>
+            <div className="text-sm sm:text-base text-blue-500">
+              Happy Users
+            </div>
           </div>
           <div>
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               50,000+
             </div>
-            <div className="text-sm sm:text-base text-blue-500">Tasks Scheduled</div>
+            <div className="text-sm sm:text-base text-blue-500">
+              Tasks Scheduled
+            </div>
           </div>
           <div>
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               4.9/5
             </div>
-            <div className="text-sm sm:text-base text-blue-500">Average Rating</div>
+            <div className="text-sm sm:text-base text-blue-500">
+              Average Rating
+            </div>
           </div>
           <div>
             <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               40%
             </div>
-            <div className="text-sm sm:text-base text-blue-500">Productivity Increase</div>
+            <div className="text-sm sm:text-base text-blue-500">
+              Productivity Increase
+            </div>
           </div>
         </div>
       </div>

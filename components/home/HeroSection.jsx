@@ -15,9 +15,7 @@ const HeroSection = () => {
   }, []);
 
   return (
-    <section
-      className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 overflow-hidden min-h-screen sm:min-h-[80vh] md:min-h-[90vh] lg:min-h-screen"
-    >
+    <section className="relative bg-gradient-to-br from-gray-50 via-white to-gray-50 overflow-hidden min-h-screen sm:min-h-[80vh] md:min-h-[90vh] lg:min-h-screen">
       <HeroBackground />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full min-h-screen sm:min-h-[80vh] md:min-h-[90vh] lg:min-h-screen flex items-center py-20 sm:py-12">

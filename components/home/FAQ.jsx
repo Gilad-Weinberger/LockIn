@@ -71,7 +71,9 @@ const FAQ = () => {
                 } overflow-hidden`}
               >
                 <div className="px-6 sm:px-8 pb-4 sm:pb-6">
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{faq.answer}</p>
+                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+                    {faq.answer}
+                  </p>
                 </div>
               </div>
             </div>

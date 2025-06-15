@@ -1,8 +1,8 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
-import { auth, db } from "@/lib/firebase";
+import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { getUserData, createUser } from "@/lib/functions/userFunctions";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext({});
@@ -27,35 +27,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const getUserData = async (uid) => {
+  const handleCreateUser = async (user) => {
     try {
-      const userRef = doc(db, "users", uid);
-      const userDoc = await getDoc(userRef);
-      return userDoc.exists() ? userDoc.data() : null;
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-      return null;
-    }
-  };
-
-  const createUser = async (user) => {
-    try {
-      const userRef = doc(db, "users", user.uid);
-      const userDoc = await getDoc(userRef);
-
-      if (!userDoc.exists()) {
-        const newUserData = {
-          id: user.uid,
-          email: user.email,
-          fullName: user.displayName || "",
-          role: "client",
-          createdAt: new Date().toISOString(),
-        };
-        await setDoc(userRef, newUserData);
-        setUserData(newUserData);
-      } else {
-        setUserData(userDoc.data());
-      }
+      const userData = await createUser(user);
+      setUserData(userData);
     } catch (error) {
       console.error("Error creating/fetching user:", error);
     }
@@ -74,7 +49,7 @@ export const AuthProvider = ({ children }) => {
 
       if (user) {
         setUser(user);
-        await createUser(user);
+        await handleCreateUser(user);
       } else {
         setUser(null);
         setUserData(null);
