@@ -13,7 +13,7 @@ import {
   MatrixLegend,
 } from "@/components/matrix";
 import { NavigationButton } from "@/components/ui/Icons";
-import LogoutButton from "@/components/ui/LogoutButton";
+import PageLayout from "@/components/ui/PageLayout";
 import {
   getTasksExcludingDelete,
   haveTasksChanged,
@@ -170,50 +170,61 @@ const MatrixPage = () => {
   // Loading state
   if (isLoading || isPrioritizing) {
     return (
-      <MatrixLoadingState
-        isLoading={isLoading}
-        isPrioritizing={isPrioritizing}
-      />
+      <PageLayout>
+        <MatrixLoadingState
+          isLoading={isLoading}
+          isPrioritizing={isPrioritizing}
+        />
+      </PageLayout>
     );
   }
 
   // Error state
   if (hasError) {
-    return <MatrixErrorState error={hasError} />;
+    return (
+      <PageLayout>
+        <MatrixErrorState error={hasError} />
+      </PageLayout>
+    );
   }
 
   // No tasks state (should redirect, but show this as fallback)
   if (tasks.length === 0) {
-    return <MatrixEmptyState />;
+    return (
+      <PageLayout>
+        <MatrixEmptyState />
+      </PageLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-8">
-      {/* Navigation buttons */}
-      <NavigationButton
-        direction="left"
-        destination="/tasks"
-        position="left"
-        ariaLabel="Back to tasks"
-      />
-      <NavigationButton
-        direction="right"
-        destination="/calendar"
-        position="right"
-        ariaLabel="Go to calendar view"
-      />
-
-      <div className="max-w-5xl w-full flex gap-6 items-center justify-center">
-        <MatrixErrorBanner error={prioritizeError} onRetry={handleRetry} />
-        <MatrixLegend />
-        <MatrixContainer
-          tasks={tasks}
-          prioritizedTasks={prioritizedTasks}
-          onTaskMove={handleTaskMove}
+    <PageLayout>
+      <div className="h-full bg-gray-100 flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Navigation buttons */}
+        <NavigationButton
+          direction="left"
+          destination="/tasks"
+          position="left"
+          ariaLabel="Back to tasks"
         />
+        <NavigationButton
+          direction="right"
+          destination="/calendar"
+          position="right"
+          ariaLabel="Go to calendar view"
+        />
+
+        <div className="max-w-5xl w-full flex gap-6 items-center justify-center">
+          <MatrixErrorBanner error={prioritizeError} onRetry={handleRetry} />
+          <MatrixLegend />
+          <MatrixContainer
+            tasks={tasks}
+            prioritizedTasks={prioritizedTasks}
+            onTaskMove={handleTaskMove}
+          />
+        </div>
       </div>
-      <LogoutButton />
-    </div>
+    </PageLayout>
   );
 };
 

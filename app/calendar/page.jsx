@@ -12,7 +12,7 @@ import {
   CalendarEventModal,
 } from "@/components/calendar";
 import { NavigationButton } from "@/components/ui/Icons";
-import LogoutButton from "@/components/ui/LogoutButton";
+import PageLayout from "@/components/ui/PageLayout";
 
 const CalendarPage = () => {
   const { tasks: allTasks, isLoading, hasError } = useTasks();
@@ -167,79 +167,88 @@ const CalendarPage = () => {
   };
 
   if (isLoading) {
-    return <CalendarLoadingState />;
+    return (
+      <PageLayout>
+        <CalendarLoadingState />
+      </PageLayout>
+    );
   }
 
   if (hasError) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-center text-red-500 py-8">
-          <p>Error loading calendar: {hasError}</p>
+      <PageLayout>
+        <div className="h-full bg-gray-100 flex items-center justify-center">
+          <div className="text-center text-red-500 py-8">
+            <p>Error loading calendar: {hasError}</p>
+          </div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="h-screen bg-gray-100 py-4 relative">
-      {/* Navigation buttons */}
-      <NavigationButton
-        direction="left"
-        destination="/matrix"
-        position="left"
-        ariaLabel="Back to matrix view"
-      />
+    <PageLayout>
+      <div className="h-full bg-gray-100 relative flex flex-col overflow-hidden">
+        {/* Navigation buttons */}
+        <NavigationButton
+          direction="left"
+          destination="/matrix"
+          position="left"
+          ariaLabel="Back to matrix view"
+        />
 
-      {/* Scheduling error indicator */}
-      {scheduleError && (
-        <div className="absolute top-4 right-4 z-10">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm max-w-xs">
-            Scheduling error: {scheduleError}
+        {/* Scheduling error indicator */}
+        {scheduleError && (
+          <div className="absolute top-4 right-4 z-10">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm max-w-xs">
+              Scheduling error: {scheduleError}
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 flex flex-col p-4 min-h-0">
+          <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
+            {/* Calendar container as one block */}
+            <div className="bg-white rounded-lg shadow-sm border overflow-hidden flex-1 flex flex-col min-h-0">
+              <CalendarHeader
+                currentDate={currentDate}
+                view={view}
+                onViewChange={setView}
+                onPrevious={handlePrevious}
+                onNext={handleNext}
+                onToday={handleToday}
+                onSchedule={handleManualSchedule}
+                isScheduling={isScheduling}
+              />
+
+              {/* Calendar view without gap */}
+              <div className="flex-1 overflow-hidden min-h-0">
+                {view === "month" ? (
+                  <CalendarMonthView
+                    currentDate={currentDate}
+                    tasks={scheduledTasks}
+                    onDateClick={handleDateClick}
+                  />
+                ) : (
+                  <CalendarWeekView
+                    currentDate={currentDate}
+                    tasks={scheduledTasks}
+                    onDateClick={handleDateClick}
+                  />
+                )}
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-        {/* Calendar container as one block */}
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden h-full flex flex-col">
-          <CalendarHeader
-            currentDate={currentDate}
-            view={view}
-            onViewChange={setView}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            onToday={handleToday}
-            onSchedule={handleManualSchedule}
-            isScheduling={isScheduling}
-          />
-
-          {/* Calendar view without gap */}
-          <div className="flex-1 overflow-hidden">
-            {view === "month" ? (
-              <CalendarMonthView
-                currentDate={currentDate}
-                tasks={scheduledTasks}
-                onDateClick={handleDateClick}
-              />
-            ) : (
-              <CalendarWeekView
-                currentDate={currentDate}
-                tasks={scheduledTasks}
-                onDateClick={handleDateClick}
-              />
-            )}
-          </div>
-        </div>
+        <CalendarEventModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          selectedDate={selectedDate}
+          tasks={scheduledTasks}
+        />
       </div>
-
-      <CalendarEventModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        selectedDate={selectedDate}
-        tasks={scheduledTasks}
-      />
-      <LogoutButton />
-    </div>
+    </PageLayout>
   );
 };
 
