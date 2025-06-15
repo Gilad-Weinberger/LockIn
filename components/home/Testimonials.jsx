@@ -10,18 +10,18 @@ const Testimonials = () => {
   const duplicatedTestimonials = [...testimonials, ...testimonials];
 
   return (
-    <section id="testimonials" className="py-24 bg-white overflow-hidden">
+    <section id="testimonials" className="py-16 sm:py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Trusted by{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-600">
               Thousands
             </span>{" "}
             of Users
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto px-4 sm:px-0">
             See how LockIn's AI-powered scheduling has transformed productivity
             for professionals across different industries.
           </p>
@@ -29,11 +29,11 @@ const Testimonials = () => {
 
         {/* Infinite Carousel */}
         <div className="relative">
-          <div className="flex space-x-6 animate-scroll">
+          <div className="flex space-x-4 sm:space-x-6 animate-scroll">
             {duplicatedTestimonials.map((testimonial, index) => (
               <div
                 key={`${testimonial.name}-${index}`}
-                className="flex-shrink-0 w-96 bg-gray-50 rounded-2xl p-8 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col"
+                className="flex-shrink-0 w-80 sm:w-96 bg-gray-50 rounded-2xl p-6 sm:p-8 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 flex flex-col"
                 onMouseEnter={() => setIsPaused(true)}
                 onMouseLeave={() => setIsPaused(false)}
                 style={{
@@ -41,17 +41,17 @@ const Testimonials = () => {
                 }}
               >
                 {/* User Data - Top */}
-                <div className="flex items-center mb-2">
+                <div className="flex items-center mb-4">
                   <div
-                    className={`w-12 h-12 bg-gradient-to-br ${testimonial.color} rounded-full flex items-center justify-center text-white font-bold text-sm mr-4`}
+                    className={`w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br ${testimonial.color} rounded-full flex items-center justify-center text-white font-bold text-xs sm:text-sm mr-3 sm:mr-4`}
                   >
                     {testimonial.image}
                   </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-gray-900 text-sm sm:text-base">
                       {testimonial.name}
                     </div>
-                    <div className="text-sm text-gray-600">
+                    <div className="text-xs sm:text-sm text-gray-600">
                       {testimonial.role}
                       {testimonial.company && (
                         <>
@@ -67,17 +67,17 @@ const Testimonials = () => {
 
                 {/* Testimonial Text - Center */}
                 <div className="flex-1 flex items-center justify-center">
-                  <blockquote className="text-gray-700 leading-relaxed text-center">
+                  <blockquote className="text-gray-700 leading-relaxed text-center text-sm sm:text-base">
                     "{testimonial.content}"
                   </blockquote>
                 </div>
 
                 {/* Rating - Bottom Center */}
-                <div className="flex items-center justify-center">
+                <div className="flex items-center justify-center mt-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <svg
                       key={i}
-                      className="w-5 h-5 text-yellow-400"
+                      className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400"
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -91,30 +91,30 @@ const Testimonials = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+        <div className="mt-16 sm:mt-20 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center">
           <div>
-            <div className="text-3xl md:text-4xl font-bold mb-2 text-blue-600">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               2,500+
             </div>
-            <div className="text-blue-500">Happy Users</div>
+            <div className="text-sm sm:text-base text-blue-500">Happy Users</div>
           </div>
           <div>
-            <div className="text-3xl md:text-4xl font-bold mb-2 text-blue-600">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               50,000+
             </div>
-            <div className="text-blue-500">Tasks Scheduled</div>
+            <div className="text-sm sm:text-base text-blue-500">Tasks Scheduled</div>
           </div>
           <div>
-            <div className="text-3xl md:text-4xl font-bold mb-2 text-blue-600">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               4.9/5
             </div>
-            <div className="text-blue-500">Average Rating</div>
+            <div className="text-sm sm:text-base text-blue-500">Average Rating</div>
           </div>
           <div>
-            <div className="text-3xl md:text-4xl font-bold mb-2 text-blue-600">
+            <div className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-blue-600">
               40%
             </div>
-            <div className="text-blue-500">Productivity Increase</div>
+            <div className="text-sm sm:text-base text-blue-500">Productivity Increase</div>
           </div>
         </div>
       </div>

@@ -9,17 +9,17 @@ const GetStartedButton = ({
   const sizeClasses = {
     sm: "px-4 py-2 text-sm",
     md: "px-6 py-3 text-base",
-    lg: "px-8 py-4 text-lg"
+    lg: "px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
   };
 
   return (
     <Link
       href={href}
-      className={`bg-gradient-to-r from-blue-500 to-blue-600 text-white ${sizeClasses[size]} rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center space-x-2 ${className}`}
+      className={`bg-gradient-to-r from-blue-500 to-blue-600 text-white ${sizeClasses[size]} rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 inline-flex ${className}`}
     >
       <span>{text}</span>
       <svg
-        className="w-5 h-5"
+        className="w-4 h-4 sm:w-5 sm:h-5"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
