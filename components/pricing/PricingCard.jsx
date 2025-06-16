@@ -1,6 +1,7 @@
 import Link from "next/link";
+import PricingCheckout from "./PricingCheckout";
 
-const PricingCard = ({ plan, isAnnual, ctaHref = "/auth/signup" }) => {
+const PricingCard = ({ plan, isAnnual }) => {
   return (
     <div
       className={`relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 ${
@@ -47,12 +48,7 @@ const PricingCard = ({ plan, isAnnual, ctaHref = "/auth/signup" }) => {
         </div>
 
         {/* CTA Button */}
-        <Link
-          href={ctaHref}
-          className={`w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 mb-6 sm:mb-8 text-sm sm:text-base text-center inline-block ${plan.buttonColor}`}
-        >
-          {plan.name === "Starter" ? "Get Started Free" : "Get Started"}
-        </Link>
+        <PricingCheckout plan={plan} isAnnual={isAnnual} />
 
         {/* Features */}
         <div className="space-y-3 sm:space-y-4">

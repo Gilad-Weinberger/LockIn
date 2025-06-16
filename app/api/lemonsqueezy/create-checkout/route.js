@@ -1,5 +1,5 @@
 import { createLemonSqueezyCheckout } from "@/lib/lemonsqueezy";
-import { findUserInFirestore } from "@/lib/firestore";
+import { getUserData } from "@/lib/functions/userFunctions";
 import { NextRequest, NextResponse } from "next/server";
 
 // This function is used to create a Lemon Squeezy Checkout Session (one-time payment or subscription)
@@ -23,7 +23,7 @@ export async function POST(req) {
   try {
     // Get user info from request body if provided
     const userId = body.userId;
-    const user = userId ? await findUserInFirestore(userId) : null;
+    const user = userId ? await getUserData(userId) : null;
 
     const { variantId, redirectUrl } = body;
 

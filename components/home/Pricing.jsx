@@ -26,7 +26,7 @@ const Pricing = () => {
         />
 
         {/* Pricing Cards */}
-        <PricingGrid isAnnual={isAnnual} ctaHref="/auth/signup" />
+        <PricingGrid isAnnual={isAnnual} />
       </div>
     </section>
   );
