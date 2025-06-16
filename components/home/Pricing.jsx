@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { pricingPlans } from "@/lib/homepage-data";
 
 const Pricing = () => {
@@ -110,13 +111,12 @@ const Pricing = () => {
                 </div>
 
                 {/* CTA Button */}
-                <button
-                  className={`w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 mb-6 sm:mb-8 text-sm sm:text-base ${plan.buttonColor}`}
+                <Link
+                  href="/auth/signup"
+                  className={`w-full py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 mb-6 sm:mb-8 text-sm sm:text-base text-center inline-block ${plan.buttonColor}`}
                 >
-                  {plan.name === "Free"
-                    ? "Get Started Free"
-                    : "Start Free Trial"}
-                </button>
+                  {plan.name === "Starter" ? "Get Started Free" : "Get Started"}
+                </Link>
 
                 {/* Features */}
                 <div className="space-y-3 sm:space-y-4">
