@@ -77,13 +77,6 @@ See your productivity improvements over time with detailed analytics and insight
 4. **Schedule**: Block time on your calendar for focused work
 5. **Track**: Monitor your progress and celebrate your wins
 
-## 💡 Productivity Tips
-
-- **Start Small**: Begin with just 3-5 tasks per day
-- **Use the 2-Minute Rule**: If something takes less than 2 minutes, do it immediately
-- **Time Block**: Schedule specific times for different types of work
-- **Review Weekly**: Spend 10 minutes each week reviewing your progress
-
 ---
 
 **Ready to lock in and boost your productivity?** Start using LockIn today and transform how you work, study, and achieve your goals.
