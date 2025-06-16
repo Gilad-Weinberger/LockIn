@@ -263,7 +263,7 @@ const TaskList = ({ onEdit }) => {
                     aria-label={`Edit ${cat} category`}
                     title={`Edit ${cat} category`}
                   >
-                    <EditIcon className="h-4 w-4" />
+                    <EditIcon className="h-5 w-5" />
                   </button>
                   <button
                     onClick={() => handleDeleteCategory(cat)}
@@ -271,7 +271,7 @@ const TaskList = ({ onEdit }) => {
                     aria-label={`Delete ${cat} category`}
                     title={`Delete ${cat} category`}
                   >
-                    <DeleteIcon className="h-4 w-4" />
+                    <DeleteIcon className="h-5 w-5" />
                   </button>
                 </div>
               </div>
