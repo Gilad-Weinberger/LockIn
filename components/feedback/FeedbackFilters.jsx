@@ -78,7 +78,7 @@ const FeedbackFilters = ({
       </div>
 
       {/* Filter Buttons */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-3">
         {filters.map((filter) => (
           <button
             key={filter.key}
@@ -89,16 +89,16 @@ const FeedbackFilters = ({
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105"
             }`}
           >
-            <span>{filter.label}</span>
             <span
-              className={`flex items-center justify-center w-6 h-6 rounded-full ${
+              className={`flex items-center justify-center rounded-full ${
                 activeFilter === filter.key
-                  ? "bg-white text-blue-600"
-                  : "bg-blue-500 text-white"
+                  ? "bg-blue-500 text-white"
+                  : "text-blue-600"
               }`}
             >
               {filter.icon}
             </span>
+            <span>{filter.label}</span>
           </button>
         ))}
       </div>

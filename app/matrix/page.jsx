@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
 import { useTasks } from "@/hooks/useTasks";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -25,7 +24,6 @@ import {
 const MatrixPage = () => {
   const { tasks, isLoading, hasError } = useTasks(false); // Only get undone tasks
   const { user } = useAuth();
-  const router = useRouter();
   const [isPrioritizing, setIsPrioritizing] = useState(false);
   const [prioritizedTasks, setPrioritizedTasks] = useState(null);
   const [prioritizeError, setPrioritizeError] = useState("");

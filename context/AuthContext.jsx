@@ -2,7 +2,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { getUserData, createUser } from "@/lib/functions/userFunctions";
+import {
+  getUserData,
+  createUser,
+  checkAdminStatus,
+} from "@/lib/functions/userFunctions";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext({});
@@ -10,6 +14,8 @@ const AuthContext = createContext({});
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [userData, setUserData] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
   const router = useRouter();
@@ -19,6 +25,7 @@ export const AuthProvider = ({ children }) => {
       await signOut(auth);
       setUser(null);
       setUserData(null);
+      setIsAdmin(false);
       console.log("User signed out");
       // Always redirect to signin after logout
       router.push("/auth/signin");
@@ -27,10 +34,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const checkUserAdminStatus = async (uid) => {
+    if (!uid) {
+      setIsAdmin(false);
+      return;
+    }
+
+    setAdminLoading(true);
+    try {
+      const adminStatus = await checkAdminStatus(uid);
+      setIsAdmin(adminStatus);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      setIsAdmin(false);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
   const handleCreateUser = async (user) => {
     try {
       const userData = await createUser(user);
       setUserData(userData);
+      // Check admin status after getting user data
+      await checkUserAdminStatus(user.uid);
     } catch (error) {
       console.error("Error creating/fetching user:", error);
     }
@@ -40,6 +67,8 @@ export const AuthProvider = ({ children }) => {
     if (user) {
       const data = await getUserData(user.uid);
       setUserData(data);
+      // Refresh admin status as well
+      await checkUserAdminStatus(user.uid);
     }
   };
 
@@ -53,6 +82,7 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
         setUserData(null);
+        setIsAdmin(false);
         const pathname = window.location.pathname;
 
         // Only redirect to signin if not already on an auth page or home
@@ -71,11 +101,14 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     userData,
+    isAdmin,
+    adminLoading,
     loading,
     initialLoading,
     logout,
     getUserData,
     refreshUserData,
+    checkUserAdminStatus,
   };
 
   return (
