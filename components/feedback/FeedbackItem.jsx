@@ -107,7 +107,7 @@ const FeedbackItem = ({
         </div>
 
         {/* Admin Controls + Vote Button */}
-        <div className="flex flex-col items-center ml-6 space-y-3">
+        <div className="flex items-center ml-6 mt-2 space-x-3">
           {/* Admin Toggle - Only visible to admins */}
           {isAdmin && (
             <div className="flex flex-col items-center">
@@ -186,7 +186,7 @@ const FeedbackItem = ({
           <button
             onClick={handleVote}
             disabled={isVoting || hasVoted || !isLoggedIn}
-            className={`flex flex-col items-center p-3 rounded-2xl transition-all duration-200 min-w-[53px] mt-2 ${
+            className={`flex flex-col items-center p-3 rounded-2xl transition-all duration-200 min-w-[53px] ${
               hasVoted
                 ? "bg-blue-50 text-blue-600 cursor-default"
                 : !isLoggedIn
