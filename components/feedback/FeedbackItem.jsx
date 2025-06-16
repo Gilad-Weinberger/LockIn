@@ -186,7 +186,7 @@ const FeedbackItem = ({
           <button
             onClick={handleVote}
             disabled={isVoting || hasVoted || !isLoggedIn}
-            className={`flex flex-col items-center p-3 rounded-lg transition-all duration-200 min-w-[60px] ${
+            className={`flex flex-col items-center p-3 rounded-2xl transition-all duration-200 min-w-[53px] mt-2 ${
               hasVoted
                 ? "bg-blue-50 text-blue-600 cursor-default"
                 : !isLoggedIn
