@@ -7,6 +7,7 @@ import {
   signInWithGoogle,
   resetPassword,
 } from "../../../lib/auth";
+import { createUser, getUserData } from "../../../lib/functions/userFunctions";
 
 // Components
 import AuthLayout from "../../../components/auth/AuthLayout";
@@ -53,7 +54,16 @@ const SignInPage = () => {
     if (error) {
       setError(error);
     } else {
-      router.push("/tasks");
+      // Check if user object exists in database
+      const userData = await getUserData(user.uid);
+
+      if (!userData) {
+        // Create user object and redirect to pricing
+        await createUser(user);
+        router.push("/pricing");
+      } else {
+        router.push("/tasks");
+      }
     }
 
     setIsLoading(false);
@@ -68,7 +78,16 @@ const SignInPage = () => {
     if (error) {
       setError(error);
     } else {
-      router.push("/tasks");
+      // Check if user object exists in database
+      const userData = await getUserData(user.uid);
+
+      if (!userData) {
+        // Create user object and redirect to pricing
+        await createUser(user);
+        router.push("/pricing");
+      } else {
+        router.push("/tasks");
+      }
     }
 
     setIsLoading(false);

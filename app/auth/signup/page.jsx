@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUpWithEmail, signInWithGoogle } from "../../../lib/auth";
+import { createUser, getUserData } from "../../../lib/functions/userFunctions";
 
 // Components
 import AuthLayout from "../../../components/auth/AuthLayout";
@@ -64,13 +65,9 @@ const SignUpPage = () => {
     if (error) {
       setError(error);
     } else {
-      setSuccess(
-        "Account created successfully! Please check your email to verify your account."
-      );
-      // Optionally redirect after a delay
-      setTimeout(() => {
-        router.push("/auth/signin");
-      }, 3000);
+      // Create user object in database and redirect to pricing
+      await createUser(user);
+      router.push("/pricing");
     }
 
     setIsLoading(false);
@@ -85,7 +82,16 @@ const SignUpPage = () => {
     if (error) {
       setError(error);
     } else {
-      router.push("/tasks");
+      // Check if user object exists in database
+      const userData = await getUserData(user.uid);
+
+      if (!userData) {
+        // Create user object and redirect to pricing
+        await createUser(user);
+        router.push("/pricing");
+      } else {
+        router.push("/tasks");
+      }
     }
 
     setIsLoading(false);
