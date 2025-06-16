@@ -2,16 +2,36 @@
 
 import { useState, useEffect } from "react";
 import GetStartedButton from "@/components/ui/GetStartedButton";
-import HeroBadge from "./HeroBadge";
-import HeroHeadline from "./HeroHeadline";
-import HeroSocialProof from "./HeroSocialProof";
-import HeroBackground from "./HeroBackground";
+import HeroBadge from "./hero/HeroBadge";
+import HeroHeadline from "./hero/HeroHeadline";
+import HeroSocialProof from "./hero/HeroSocialProof";
+import HeroBackground from "./hero/HeroBackground";
+import { getUserCount } from "@/lib/functions/userFunctions";
 
 const HeroSection = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const [actualUserCount, setActualUserCount] = useState(null);
+  const [isLoadingUserCount, setIsLoadingUserCount] = useState(true);
 
   useEffect(() => {
     setIsVisible(true);
+  }, []);
+
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      try {
+        const count = await getUserCount();
+        setActualUserCount(count);
+      } catch (error) {
+        console.error("Error fetching user count:", error);
+        // Fall back to null on error
+        setActualUserCount(null);
+      } finally {
+        setIsLoadingUserCount(false);
+      }
+    };
+
+    fetchUserCount();
   }, []);
 
   return (
@@ -33,8 +53,13 @@ const HeroSection = () => {
           >
             <GetStartedButton />
           </div>
-
-          <HeroSocialProof isVisible={isVisible} />
+          {actualUserCount > 100 && (
+            <HeroSocialProof
+              isVisible={isVisible}
+              actualUserCount={actualUserCount}
+              isLoadingUserCount={isLoadingUserCount}
+            />
+          )}
         </div>
       </div>
     </section>

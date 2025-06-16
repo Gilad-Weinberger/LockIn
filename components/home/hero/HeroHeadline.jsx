@@ -23,8 +23,8 @@ const HeroHeadline = ({ isVisible }) => {
           isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
         }`}
       >
-        Just type your tasks naturally, and our AI instantly prioritizes and
-        schedules them perfectly for you.
+        Just add your tasks, and our AI instantly prioritizes and schedules them
+        perfectly for you.
       </p>
     </div>
   );

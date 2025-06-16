@@ -66,7 +66,7 @@ const Footer = () => {
           </div>
 
           {/* Product Links */}
-          <div>
+          {/* <div>
             <h3 className="text-white font-semibold mb-3 sm:mb-4 text-sm sm:text-base">
               Product
             </h3>
@@ -82,7 +82,7 @@ const Footer = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
         </div>
 
         {/* Bottom Footer */}

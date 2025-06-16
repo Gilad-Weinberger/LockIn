@@ -1,8 +1,31 @@
 import Image from "next/image";
 import { statsData } from "@/lib/homepage-data";
+import { formatUserCount } from "@/lib/utils/userCount";
 
-const HeroSocialProof = ({ isVisible }) => {
+const HeroSocialProof = ({
+  isVisible,
+  actualUserCount,
+  isLoadingUserCount,
+}) => {
   const happyUsersData = statsData.find((stat) => stat.label === "Happy Users");
+
+  // Determine what count to display
+  const getDisplayCount = () => {
+    if (isLoadingUserCount) {
+      return happyUsersData?.value || "2,500+"; // Show static while loading
+    }
+
+    if (actualUserCount !== null && actualUserCount > 0) {
+      return formatUserCount(actualUserCount);
+    }
+
+    // Fall back to static data if no actual count
+    return happyUsersData?.rawValue
+      ? formatUserCount(happyUsersData.rawValue)
+      : happyUsersData?.value || "2,500+";
+  };
+
+  const formattedUserCount = getDisplayCount();
 
   return (
     <div
@@ -35,7 +58,7 @@ const HeroSocialProof = ({ isVisible }) => {
           />
         </div>
         <span className="text-sm sm:text-base text-gray-600 font-medium text-center">
-          Loved by over {happyUsersData?.value || "2,500+"} people worldwide
+          Loved by over {formattedUserCount} people worldwide
         </span>
       </div>
     </div>

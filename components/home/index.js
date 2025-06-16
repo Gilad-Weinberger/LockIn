@@ -1,9 +1,9 @@
 export { default as Navbar } from "../ui/navbar/Navbar";
 export { default as HeroSection } from "./HeroSection";
-export { default as HeroBadge } from "./HeroBadge";
-export { default as HeroHeadline } from "./HeroHeadline";
-export { default as HeroSocialProof } from "./HeroSocialProof";
-export { default as HeroBackground } from "./HeroBackground";
+export { default as HeroBadge } from "./hero/HeroBadge";
+export { default as HeroHeadline } from "./hero/HeroHeadline";
+export { default as HeroSocialProof } from "./hero/HeroSocialProof";
+export { default as HeroBackground } from "./hero/HeroBackground";
 export { default as HowItWorks } from "./HowItWorks";
 export { default as Features } from "./Features";
 export { default as Testimonials } from "./Testimonials";
