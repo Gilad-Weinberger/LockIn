@@ -5,21 +5,18 @@ import FeedbackForm from "@/components/feedback/FeedbackForm";
 import FeedbackFilters from "@/components/feedback/FeedbackFilters";
 import FeedbackList from "@/components/feedback/FeedbackList";
 import DropdownMenu from "@/components/ui/DropdownMenu";
-import Navbar from "@/components/home/Navbar";
+import Navbar from "@/components/ui/navbar/Navbar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function FeedbackPage() {
   const [activeFilter, setActiveFilter] = useState("recent");
   const [showHandled, setShowHandled] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [stats, setStats] = useState({});
+  const { isAdmin } = useAuth();
 
   const handleFeatureAdded = () => {
     // Trigger a refresh of the feedback list
     setRefreshTrigger((prev) => prev + 1);
-  };
-
-  const handleStatsUpdate = (newStats) => {
-    setStats(newStats);
   };
 
   return (
@@ -45,23 +42,18 @@ export default function FeedbackPage() {
                 onFilterChange={setActiveFilter}
                 showHandled={showHandled}
                 onToggleHandled={setShowHandled}
-                stats={stats}
+                isAdmin={isAdmin}
               />
 
               <FeedbackList
                 activeFilter={activeFilter}
                 showHandled={showHandled}
                 refreshTrigger={refreshTrigger}
-                onStatsUpdate={handleStatsUpdate}
+                isAdmin={isAdmin}
               />
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Dropdown Menu - Fixed Bottom Left */}
-      <div className="fixed bottom-6 left-6 z-50">
-        <DropdownMenu />
       </div>
     </div>
   );

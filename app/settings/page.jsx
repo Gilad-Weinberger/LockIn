@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Navbar from "@/components/ui/navbar/Navbar";
 import DropdownMenu from "@/components/ui/DropdownMenu";
 import SettingsSidebar from "@/components/settings/SettingsSidebar";
 import ProfileSettings from "@/components/settings/ProfileSettings";
@@ -24,8 +25,12 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden relative">
-      <div className="h-full bg-gray-50 py-8 px-4 overflow-auto">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <Navbar />
+
+      {/* Main Content */}
+      <div className="py-8 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex gap-8">
             {/* Sidebar Block */}
@@ -46,11 +51,6 @@ const SettingsPage = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* DropdownMenu - positioned absolutely */}
-      <div className="absolute bottom-8 left-8 z-50">
-        <DropdownMenu />
       </div>
     </div>
   );

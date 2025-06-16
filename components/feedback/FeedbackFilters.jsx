@@ -1,11 +1,13 @@
 "use client";
 
+import { useAuth } from "@/context/AuthContext";
+
 const FeedbackFilters = ({
   activeFilter,
   onFilterChange,
   showHandled,
   onToggleHandled,
-  stats = {},
+  isAdmin,
 }) => {
   const filters = [
     {
@@ -43,42 +45,39 @@ const FeedbackFilters = ({
   ];
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-      {/* Show Handled Toggle */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      {/* Left side - Show Handled Toggle (only visible for admins) */}
       <div className="flex items-center space-x-3">
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showHandled}
-            onChange={(e) => onToggleHandled(e.target.checked)}
-            className="sr-only"
-          />
-          <div
-            className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
-              showHandled
-                ? "bg-gradient-to-r from-blue-500 to-blue-600"
-                : "bg-gray-300"
-            }`}
-          >
+        {isAdmin && (
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showHandled}
+              onChange={(e) => onToggleHandled(e.target.checked)}
+              className="sr-only"
+            />
             <div
-              className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
-                showHandled ? "transform translate-x-5" : ""
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${
+                showHandled
+                  ? "bg-gradient-to-r from-blue-500 to-blue-600"
+                  : "bg-gray-300"
               }`}
-            ></div>
-          </div>
-          <span className="ml-3 text-sm font-medium text-gray-700">
-            Show Handled
-          </span>
-        </label>
-        {stats.handled > 0 && (
-          <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
-            {stats.handled} handled
-          </span>
+            >
+              <div
+                className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform duration-200 ${
+                  showHandled ? "transform translate-x-5" : ""
+                }`}
+              ></div>
+            </div>
+            <span className={`ml-3 text-sm font-medium text-gray-700 `}>
+              Show Handled
+            </span>
+          </label>
         )}
       </div>
 
-      {/* Filter Buttons */}
-      <div className="flex flex-wrap gap-3">
+      {/* Right side - Filter Buttons (always present) */}
+      <div className="flex flex-wrap gap-3 sm:ml-auto">
         {filters.map((filter) => (
           <button
             key={filter.key}

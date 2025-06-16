@@ -2,11 +2,15 @@
 
 import { useState } from "react";
 import { addFeatureSuggestion } from "@/lib/functions/feedbackFunctions";
+import { useAuth } from "@/context/AuthContext";
 
 const FeedbackForm = ({ onFeatureAdded }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
+
+  const isLoggedIn = user && user.uid;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,21 +19,24 @@ const FeedbackForm = ({ onFeatureAdded }) => {
       return;
     }
 
+    // Ensure user is logged in before submitting
+    if (!isLoggedIn) {
+      console.error("User must be logged in to submit feedback");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const result = await addFeatureSuggestion(
         title.trim(),
-        description.trim()
+        description.trim(),
+        user.uid
       );
 
       if (result.success) {
         setTitle("");
         setDescription("");
-        setShowSuccess(true);
-
-        // Hide success message after 3 seconds
-        setTimeout(() => setShowSuccess(false), 3000);
 
         // Callback to refresh the list
         if (onFeatureAdded) {
@@ -42,6 +49,46 @@ const FeedbackForm = ({ onFeatureAdded }) => {
       setIsSubmitting(false);
     }
   };
+
+  // Show login message for non-logged-in users
+  if (!isLoggedIn) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Suggest a feature
+        </h2>
+        <div className="text-center py-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+            <svg
+              className="w-8 h-8 text-blue-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            Login Required
+          </h3>
+          <p className="text-gray-500 mb-4">
+            Please log in to suggest new features and vote on existing ones.
+          </p>
+          <a
+            href="/auth/signin"
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
+          >
+            Sign In
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">

@@ -3,16 +3,18 @@
 import { useState, useEffect } from "react";
 import FeedbackItem from "./FeedbackItem";
 import { getFeedbackItems } from "@/lib/functions/feedbackFunctions";
+import { useAuth } from "@/context/AuthContext";
 
 const FeedbackList = ({
   activeFilter,
   showHandled,
   refreshTrigger,
-  onStatsUpdate,
+  isAdmin,
 }) => {
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   const loadFeedbackItems = async () => {
     setIsLoading(true);
@@ -23,17 +25,6 @@ const FeedbackList = ({
 
       if (result.success) {
         setFeedbackItems(result.data);
-
-        // Calculate and send stats to parent
-        if (onStatsUpdate) {
-          const stats = {
-            total: result.data.length,
-            handled: result.data.filter((item) => item.handled === true).length,
-            pending: result.data.filter((item) => item.handled === false)
-              .length,
-          };
-          onStatsUpdate(stats);
-        }
       } else {
         setError(result.error);
       }
@@ -208,11 +199,13 @@ const FeedbackList = ({
 
   return (
     <div className="space-y-4">
-      {filteredItems.map((feedback) => (
+      {filteredItems.map((item) => (
         <FeedbackItem
-          key={feedback.id}
-          feedback={feedback}
+          key={item.id}
+          feedback={item}
           onVoteUpdate={handleVoteUpdate}
+          currentUserId={user?.uid || null}
+          isAdmin={isAdmin}
         />
       ))}
     </div>
