@@ -1,9 +1,42 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { getAIPrioritizationTokensLeft } from "@/lib/plans/freePlanFeatures";
+import { getUserSubscriptionLevel } from "@/lib/utils/subscription-utils";
+import AIFunctionButton from "@/components/ui/AIFunctionButton";
+
 const MatrixLegend = ({ onRePrioritize, isPrioritizing = false }) => {
+  const { user } = useAuth();
+  const [tokensLeft, setTokensLeft] = useState(null);
+  const [subscriptionLevel, setSubscriptionLevel] = useState(null);
+
+  useEffect(() => {
+    const fetchTokenInfo = async () => {
+      if (!user) return;
+
+      try {
+        const level = await getUserSubscriptionLevel(user.uid);
+        setSubscriptionLevel(level);
+
+        if (level === "free") {
+          const tokens = await getAIPrioritizationTokensLeft(user.uid);
+          setTokensLeft(tokens);
+        }
+      } catch (error) {
+        console.error("Error fetching token info:", error);
+      }
+    };
+
+    fetchTokenInfo();
+  }, [user]);
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-[18px] py-5 border flex-shrink-0">
       <h3 className="text-sm font-semibold text-gray-700 mb-4 text-center">
         Eisenhower Matrix
       </h3>
+
       <div className="space-y-4 text-xs">
         <div className="flex items-center space-x-3">
           <div className="w-6 h-6 bg-red-200 border border-red-300 rounded flex-shrink-0"></div>
@@ -35,31 +68,24 @@ const MatrixLegend = ({ onRePrioritize, isPrioritizing = false }) => {
         </div>
       </div>
 
-      {/* Re-prioritize Button */}
+      {/* AI Prioritize Button */}
       {onRePrioritize && (
         <div className="mt-6 pt-4 border-t border-gray-200">
-          <button
+          <AIFunctionButton
             onClick={onRePrioritize}
-            disabled={isPrioritizing}
-            className="w-full px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center justify-center gap-2"
+            disabled={subscriptionLevel === "free" && tokensLeft === 0}
+            isProcessing={isPrioritizing}
+            processingText="AI prioritizing..."
+            size="sm"
+            className="w-full"
           >
-            {isPrioritizing ? (
-              <>
-                <svg className="animate-spin h-3 w-3 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Re-prioritizing...
-              </>
-            ) : (
-              <>
-                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                Re-prioritize
-              </>
-            )}
-          </button>
+            AI prioritize
+          </AIFunctionButton>
+          {subscriptionLevel === "free" && tokensLeft === 0 && (
+            <p className="text-xs text-gray-500 text-center mt-2">
+              Upgrade to Pro for unlimited AI prioritizations
+            </p>
+          )}
         </div>
       )}
     </div>

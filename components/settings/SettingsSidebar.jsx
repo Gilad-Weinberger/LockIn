@@ -1,35 +1,133 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
+import {
+  hasSubscriptionLevel,
+  SUBSCRIPTION_LEVELS,
+} from "@/lib/utils/subscription-utils";
+
 const SettingsSidebar = ({ activeSection, onSectionChange }) => {
-  const settingsItems = [
+  const { user } = useAuth();
+  const [isProfessionalUser, setIsProfessionalUser] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!user?.uid) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const hasProfessional = await hasSubscriptionLevel(
+          user.uid,
+          SUBSCRIPTION_LEVELS.PROFESSIONAL
+        );
+        setIsProfessionalUser(hasProfessional);
+      } catch (error) {
+        console.error("Error checking subscription level:", error);
+        setIsProfessionalUser(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkSubscription();
+  }, [user?.uid]);
+
+  const getAllSettingsItems = () => [
     {
       id: "profile",
       label: "Profile",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
         </svg>
       ),
+      requiresPro: false,
+    },
+    {
+      id: "billing",
+      label: "Billing",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+          />
+        </svg>
+      ),
+      requiresPro: false,
     },
     {
       id: "prioritizing-rules",
       label: "Prioritizing Rules",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+          />
         </svg>
       ),
+      requiresPro: true,
     },
     {
       id: "scheduling-rules",
       label: "Scheduling Rules",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
         </svg>
       ),
+      requiresPro: true,
     },
   ];
+
+  // Filter settings items based on subscription level
+  const getVisibleSettingsItems = () => {
+    const allItems = getAllSettingsItems();
+    if (loading) return allItems; // Show all items while loading
+
+    return allItems.filter((item) => !item.requiresPro || isProfessionalUser);
+  };
+
+  const settingsItems = getVisibleSettingsItems();
 
   return (
     <div className="p-6">
@@ -56,7 +154,11 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
               }
             `}
           >
-            <span className={`mr-3 ${activeSection === item.id ? "text-blue-700" : "text-gray-400"}`}>
+            <span
+              className={`mr-3 ${
+                activeSection === item.id ? "text-blue-700" : "text-gray-400"
+              }`}
+            >
               {item.icon}
             </span>
             {item.label}
@@ -67,4 +169,4 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
   );
 };
 
-export default SettingsSidebar; 
+export default SettingsSidebar;

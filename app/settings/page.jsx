@@ -5,6 +5,7 @@ import Navbar from "@/components/ui/navbar/Navbar";
 import DropdownMenu from "@/components/ui/DropdownMenu";
 import SettingsSidebar from "@/components/settings/SettingsSidebar";
 import ProfileSettings from "@/components/settings/ProfileSettings";
+import BillingSettings from "@/components/settings/BillingSettings";
 import PrioritizingRulesSettings from "@/components/settings/PrioritizingRulesSettings";
 import SchedulingRulesSettings from "@/components/settings/SchedulingRulesSettings";
 
@@ -15,6 +16,8 @@ const SettingsPage = () => {
     switch (activeSection) {
       case "profile":
         return <ProfileSettings />;
+      case "billing":
+        return <BillingSettings />;
       case "prioritizing-rules":
         return <PrioritizingRulesSettings />;
       case "scheduling-rules":

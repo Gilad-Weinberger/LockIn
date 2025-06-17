@@ -3,21 +3,52 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { updateSchedulingRules } from "@/lib/functions/userFunctions";
+import {
+  hasSubscriptionLevel,
+  SUBSCRIPTION_LEVELS,
+} from "@/lib/utils/subscription-utils";
+import ProPaywall from "./ProPaywall";
 
 const SchedulingRulesSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [schedulingRules, setSchedulingRules] = useState("");
+  const [isProfessionalUser, setIsProfessionalUser] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
 
   useEffect(() => {
-    if (userData) {
+    const checkSubscription = async () => {
+      if (!user?.uid) {
+        setSubscriptionLoading(false);
+        return;
+      }
+
+      try {
+        const hasProfessional = await hasSubscriptionLevel(
+          user.uid,
+          SUBSCRIPTION_LEVELS.PROFESSIONAL
+        );
+        setIsProfessionalUser(hasProfessional);
+      } catch (error) {
+        console.error("Error checking subscription level:", error);
+        setIsProfessionalUser(false);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    checkSubscription();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (userData && isProfessionalUser) {
       setSchedulingRules(userData.schedulingRules || "");
     }
-  }, [userData]);
+  }, [userData, isProfessionalUser]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !isProfessionalUser) return;
 
     setIsSaving(true);
     try {
@@ -33,11 +64,34 @@ const SchedulingRulesSettings = () => {
   };
 
   const handleCancel = () => {
-    if (userData) {
+    if (userData && isProfessionalUser) {
       setSchedulingRules(userData.schedulingRules || "");
     }
     setIsEditing(false);
   };
+
+  // Show loading state while checking subscription
+  if (subscriptionLoading) {
+    return (
+      <div className="p-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 mb-6"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show paywall for free users
+  if (!isProfessionalUser) {
+    return (
+      <ProPaywall
+        featureName="Custom Scheduling Rules"
+        description="Define intelligent scheduling preferences to automatically organize your prioritized tasks based on your energy levels and optimal work patterns."
+      />
+    );
+  }
 
   const defaultRulesText = `Enter your custom scheduling rules here. These rules will guide how tasks are automatically scheduled in your calendar.
 

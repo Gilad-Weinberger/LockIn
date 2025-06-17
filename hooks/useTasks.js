@@ -9,10 +9,16 @@ export const useTasks = (filterDone = null) => {
   const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) {
+      setTasks([]);
+      setIsLoading(false);
+      return;
+    }
+
     setIsLoading(true);
     setHasError("");
 
-    const unsubscribe = setupTasksListener(({ tasks, error }) => {
+    const unsubscribe = setupTasksListener(user.uid, ({ tasks, error }) => {
       if (error) {
         setHasError(error);
       } else {
@@ -22,16 +28,13 @@ export const useTasks = (filterDone = null) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [user]);
 
-  // Filter tasks by user and optionally by done status
-  const userTasks = user
-    ? tasks.filter((task) => {
-        const isUserTask = task.userId === user.uid;
-        if (filterDone === null) return isUserTask;
-        return isUserTask && task.isDone === filterDone;
-      })
-    : [];
+  // Filter tasks by done status if specified (userId filtering now happens in the query)
+  const filteredTasks =
+    filterDone === null
+      ? tasks
+      : tasks.filter((task) => task.isDone === filterDone);
 
-  return { tasks: userTasks, isLoading, hasError };
+  return { tasks: filteredTasks, isLoading, hasError };
 };

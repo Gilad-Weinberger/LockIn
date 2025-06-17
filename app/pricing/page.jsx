@@ -17,14 +17,6 @@ const PricingPage = () => {
 
           {/* Pricing Cards */}
           <PricingGrid isAnnual={isAnnual} ctaHref="/auth/signup" />
-
-          {/* AI Tasks Explanation */}
-          <div className="mt-12 text-center">
-            <p className="text-sm text-gray-600 font-medium">
-              <span className="text-red-600 font-bold">*</span> AI-Tasks means
-              AI enabled for prioritization and scheduling
-            </p>
-          </div>
         </div>
       </div>
     </div>

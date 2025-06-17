@@ -11,6 +11,12 @@ import {
   logRequest,
   logSuccess,
 } from "@/lib/utils/errorHandling";
+import {
+  hasAISchedulingTokens,
+  incrementAISchedulingTokens,
+  getAISchedulingTokensLeft,
+} from "@/lib/plans/freePlanFeatures";
+import { getUserSubscriptionLevel } from "@/lib/utils/subscription-utils";
 
 export async function POST(request) {
   logRequest("Scheduling");
@@ -37,8 +43,41 @@ export async function POST(request) {
       forceReschedule,
     });
 
+    // Check user subscription level
+    const subscriptionLevel = await getUserSubscriptionLevel(userId);
+
+    // For free users, check AI scheduling token limits
+    let maxTasks = null;
+    if (subscriptionLevel === "free") {
+      const tokensLeft = await getAISchedulingTokensLeft(userId);
+
+      if (tokensLeft === 0) {
+        return createErrorResponse(
+          `You have reached your monthly limit of 25 AI task processing operations. Upgrade to Pro for unlimited AI scheduling.`,
+          429
+        );
+      }
+
+      maxTasks = tokensLeft; // Limit AI processing to available tokens
+    }
+
     // Use the scheduling service
-    const result = await scheduleTasksService(userId, forceReschedule);
+    const result = await scheduleTasksService(
+      userId,
+      forceReschedule,
+      maxTasks
+    );
+
+    // Only increment tokens for free users after successful AI usage (and only if tasks were actually scheduled)
+    if (subscriptionLevel === "free" && result.scheduledTasks > 0) {
+      try {
+        // Count each task scheduled as 1 token
+        await incrementAISchedulingTokens(userId, result.scheduledTasks);
+      } catch (error) {
+        console.error("Error incrementing AI scheduling tokens:", error);
+        // Don't fail the request if token increment fails
+      }
+    }
 
     logSuccess("Scheduling", {
       tasksScheduled: result.scheduledTasks || 0,
@@ -49,4 +88,12 @@ export async function POST(request) {
   } catch (error) {
     return handleServiceError(error, "Scheduling");
   }
+}
+
+// Helper function to create error responses
+function createErrorResponse(message, status) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
 }

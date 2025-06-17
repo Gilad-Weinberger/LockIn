@@ -41,7 +41,13 @@ const CalendarPage = () => {
   useEffect(() => {
     // Add a ref to track scheduling attempts to prevent excessive calls
     const scheduleTasksAuto = async () => {
-      if (!user || isLoading || isScheduling) return;
+      if (
+        !user ||
+        isLoading ||
+        isScheduling ||
+        userData?.autoSchedule === false
+      )
+        return;
 
       // Check if there are future tasks that need scheduling
       const futureUnscheduledTasks = allTasks.filter(
@@ -99,7 +105,7 @@ const CalendarPage = () => {
       const timeoutId = setTimeout(scheduleTasksAuto, 3000); // Increased to 3 seconds
       return () => clearTimeout(timeoutId);
     }
-  }, [user, allTasks.length, isLoading]); // Changed dependency to allTasks.length instead of allTasks object
+  }, [user, allTasks.length, isLoading, userData?.autoSchedule]); // Added userData?.autoSchedule to dependencies
 
   // Manual scheduling function for all future tasks (triggered by button)
   const handleManualSchedule = async () => {

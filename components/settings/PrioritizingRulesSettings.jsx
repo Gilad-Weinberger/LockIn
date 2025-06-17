@@ -3,21 +3,52 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { updatePrioritizingRules } from "@/lib/functions/userFunctions";
+import {
+  hasSubscriptionLevel,
+  SUBSCRIPTION_LEVELS,
+} from "@/lib/utils/subscription-utils";
+import ProPaywall from "./ProPaywall";
 
 const PrioritizingRulesSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [prioritizingRules, setPrioritizingRules] = useState("");
+  const [isProfessionalUser, setIsProfessionalUser] = useState(false);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
 
   useEffect(() => {
-    if (userData) {
+    const checkSubscription = async () => {
+      if (!user?.uid) {
+        setSubscriptionLoading(false);
+        return;
+      }
+
+      try {
+        const hasProfessional = await hasSubscriptionLevel(
+          user.uid,
+          SUBSCRIPTION_LEVELS.PROFESSIONAL
+        );
+        setIsProfessionalUser(hasProfessional);
+      } catch (error) {
+        console.error("Error checking subscription level:", error);
+        setIsProfessionalUser(false);
+      } finally {
+        setSubscriptionLoading(false);
+      }
+    };
+
+    checkSubscription();
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (userData && isProfessionalUser) {
       setPrioritizingRules(userData.prioritizingRules || "");
     }
-  }, [userData]);
+  }, [userData, isProfessionalUser]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user || !isProfessionalUser) return;
 
     setIsSaving(true);
     try {
@@ -33,11 +64,34 @@ const PrioritizingRulesSettings = () => {
   };
 
   const handleCancel = () => {
-    if (userData) {
+    if (userData && isProfessionalUser) {
       setPrioritizingRules(userData.prioritizingRules || "");
     }
     setIsEditing(false);
   };
+
+  // Show loading state while checking subscription
+  if (subscriptionLoading) {
+    return (
+      <div className="p-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3 mb-6"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show paywall for free users
+  if (!isProfessionalUser) {
+    return (
+      <ProPaywall
+        featureName="Custom Prioritizing Rules"
+        description="Create personalized AI rules to automatically prioritize your tasks based on your unique workflow and preferences."
+      />
+    );
+  }
 
   const defaultRulesText = `Enter your custom prioritizing rules here. These rules will guide how tasks are automatically prioritized.
 

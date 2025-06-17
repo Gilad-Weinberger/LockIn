@@ -39,13 +39,14 @@ const MatrixPage = () => {
   // Automatically prioritize tasks when page loads and tasks are available
   useEffect(() => {
     const prioritizeTasksAsync = async () => {
-      // Don't proceed if no user, no tasks, still loading, already prioritizing, or already ran
+      // Don't proceed if no user, no tasks, still loading, already prioritizing, already ran, or auto-prioritize is disabled
       if (
         !user ||
         !tasks.length ||
         isLoading ||
         isPrioritizing ||
-        hasRunPrioritization.current
+        hasRunPrioritization.current ||
+        userData?.autoPrioritize === false
       ) {
         return;
       }
@@ -98,6 +99,13 @@ const MatrixPage = () => {
         const result = await prioritizeTasks(tasksToReprioritize, user.uid);
         console.log("Prioritization result:", result);
 
+        // Display limit message if tasks were limited due to free plan
+        if (result.limitMessage) {
+          setPrioritizeError(
+            `✅ Tasks prioritized successfully! ${result.limitMessage}`
+          );
+        }
+
         // Include existing delete tasks in the final result
         const existingDeleteTasks = tasks
           .filter((task) => task.priority === "delete")
@@ -130,7 +138,7 @@ const MatrixPage = () => {
     ) {
       prioritizeTasksAsync();
     }
-  }, [tasks, user, isLoading]); // Removed isPrioritizing from dependencies
+  }, [tasks, user, isLoading, userData?.autoPrioritize]); // Added userData?.autoPrioritize to dependencies
 
   // Reset prioritization flag when user changes or component unmounts
   useEffect(() => {
@@ -177,6 +185,13 @@ const MatrixPage = () => {
       // Force re-prioritization of ALL tasks
       const result = await prioritizeTasks(tasks, user.uid);
       console.log("Manual re-prioritization result:", result);
+
+      // Display limit message if tasks were limited due to free plan
+      if (result.limitMessage) {
+        setPrioritizeError(
+          `✅ Tasks prioritized successfully! ${result.limitMessage}`
+        );
+      }
 
       // Extract reasoning if available, otherwise use existing format
       let finalResult;
