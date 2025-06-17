@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import NavbarLogo from "./NavbarLogo";
-import NavigationLinks from "./NavigationLinks";
-import UserDropdownMenu from "../UserDropdownMenu";
-import MobileMenu from "./MobileMenu";
+import NavbarLogo from "./navbar/NavbarLogo";
+import NavigationLinks from "./navbar/NavigationLinks";
+import UserDropdownMenu from "./UserDropdownMenu";
+import MobileMenu from "./navbar/MobileMenu";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

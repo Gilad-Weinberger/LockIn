@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "../../components/ui/navbar/Navbar";
+import Navbar from "../../components/ui/Navbar";
 import PricingHeader from "../../components/pricing/PricingHeader";
 import PricingGrid from "../../components/pricing/PricingGrid";
 

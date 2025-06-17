@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "@/components/ui/navbar/Navbar";
+import Navbar from "@/components/ui/Navbar";
 import DropdownMenu from "@/components/ui/DropdownMenu";
 import SettingsSidebar from "@/components/settings/SettingsSidebar";
 import ProfileSettings from "@/components/settings/ProfileSettings";
 import BillingSettings from "@/components/settings/BillingSettings";
+import AISettings from "@/components/settings/AISettings";
 import PrioritizingRulesSettings from "@/components/settings/PrioritizingRulesSettings";
 import SchedulingRulesSettings from "@/components/settings/SchedulingRulesSettings";
 
@@ -18,6 +19,8 @@ const SettingsPage = () => {
         return <ProfileSettings />;
       case "billing":
         return <BillingSettings />;
+      case "ai-settings":
+        return <AISettings />;
       case "prioritizing-rules":
         return <PrioritizingRulesSettings />;
       case "scheduling-rules":

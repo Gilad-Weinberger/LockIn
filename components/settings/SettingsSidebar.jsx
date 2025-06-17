@@ -78,6 +78,21 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
       requiresPro: false,
     },
     {
+      id: "ai-settings",
+      label: "AI Settings",
+      icon: (
+        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          {/* Main diamond/star shape */}
+          <path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" />
+          {/* Small sparkles */}
+          <path d="M6 6l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
+          <path d="M18 4l0.5 1 1 0.5-1 0.5-0.5 1-0.5-1-1-0.5 1-0.5z" />
+          <path d="M20 16l0.8 1.6 1.6 0.8-1.6 0.8-0.8 1.6-0.8-1.6-1.6-0.8 1.6-0.8z" />
+        </svg>
+      ),
+      requiresPro: false,
+    },
+    {
       id: "prioritizing-rules",
       label: "Prioritizing Rules",
       icon: (

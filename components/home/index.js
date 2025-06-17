@@ -1,4 +1,4 @@
-export { default as Navbar } from "../ui/navbar/Navbar";
+export { default as Navbar } from "../ui/Navbar";
 export { default as HeroSection } from "./HeroSection";
 export { default as HeroBadge } from "./hero/HeroBadge";
 export { default as HeroHeadline } from "./hero/HeroHeadline";
