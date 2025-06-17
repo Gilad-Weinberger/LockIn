@@ -3,7 +3,7 @@ import PricingCard from "./PricingCard";
 
 const PricingGrid = ({ isAnnual }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+    <div className="flex gap-10 justify-center">
       {pricingPlans.map((plan, index) => (
         <PricingCard key={index} plan={plan} isAnnual={isAnnual} />
       ))}

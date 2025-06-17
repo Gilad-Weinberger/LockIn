@@ -44,14 +44,11 @@ export async function POST(req) {
 
   try {
     switch (eventName) {
-      case "order_created": {
-        // ✅ Grant access to the product
+      case "subscription_created": {
+        // ✅ Grant access to the subscription
         const userId = payload.meta?.custom_data?.userId;
-
         const email = payload.data.attributes.user_email;
-        const name = payload.data.attributes.user_name;
-        const variantId =
-          payload.data.attributes.first_order_item.variant_id.toString();
+        const variantId = payload.data.attributes.variant_id.toString();
 
         const plan = config.lemonsqueezy.plans.find(
           (p) => p.variantId === variantId
@@ -97,10 +94,51 @@ export async function POST(req) {
             true
           );
           console.log(
-            `Updated payment info for user ${userDocData.id}: customerId=${customerId}, variantId=${variantId}`
+            `Granted subscription access for user ${userDocData.id}: customerId=${customerId}, variantId=${variantId}`
           );
         } else {
           console.error("User ID not found in user document");
+        }
+
+        break;
+      }
+
+      case "subscription_updated": {
+        // Handle subscription updates (plan changes, etc.)
+        const variantId = payload.data.attributes.variant_id.toString();
+
+        const plan = config.lemonsqueezy.plans.find(
+          (p) => p.variantId === variantId
+        );
+        if (!plan) {
+          console.error("Plan not found for variantId:", variantId);
+          // Don't throw error, just log it and continue
+        }
+
+        // Find user by lemonsqueezyCustomerId in Firestore
+        const usersCollection = collection(db, "users");
+        const q = query(
+          usersCollection,
+          where("lemonsqueezyCustomerId", "==", customerId)
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userDocData = querySnapshot.docs[0].data();
+
+          // Update user payment info with new variant
+          await updateUserPaymentInfo(
+            userDocData.id,
+            customerId,
+            variantId,
+            true // Keep access active since it's an update
+          );
+
+          console.log(
+            `Updated subscription for user ${userDocData.id}: customerId=${customerId}, new variantId=${variantId}`
+          );
+        } else {
+          console.error("No user found with customerId:", customerId);
         }
 
         break;
@@ -117,7 +155,6 @@ export async function POST(req) {
 
         if (!querySnapshot.empty) {
           const userDocData = querySnapshot.docs[0].data();
-          const userRef = querySnapshot.docs[0].ref;
 
           // Update user access status using the dedicated function
           await updateUserPaymentInfo(

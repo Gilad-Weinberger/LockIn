@@ -1,10 +1,9 @@
-import Link from "next/link";
 import PricingCheckout from "./PricingCheckout";
 
 const PricingCard = ({ plan, isAnnual }) => {
   return (
     <div
-      className={`relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 ${
+      className={`relative bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border-2 max-w-md ${
         plan.isPopular ? "transform md:scale-105 z-10" : ""
       } ${plan.color}`}
     >
