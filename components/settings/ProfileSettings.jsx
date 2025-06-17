@@ -136,6 +136,18 @@ const ProfileSettings = () => {
               </p>
             </div>
 
+            {/* Member Since */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Member Since
+              </label>
+              <p className="text-gray-900 py-2">
+                {userData?.createdAt
+                  ? new Date(userData.createdAt).toLocaleDateString()
+                  : "Unknown"}
+              </p>
+            </div>
+
             {/* Auto AI Preferences */}
             <div className="border-t border-gray-200 pt-6">
               <h4 className="text-lg font-medium text-gray-900 mb-4">
@@ -209,18 +221,6 @@ const ProfileSettings = () => {
                   </span>
                 )}
               </div>
-            </div>
-
-            {/* Member Since */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Member Since
-              </label>
-              <p className="text-gray-900 py-2">
-                {userData?.createdAt
-                  ? new Date(userData.createdAt).toLocaleDateString()
-                  : "Unknown"}
-              </p>
             </div>
           </div>
 
