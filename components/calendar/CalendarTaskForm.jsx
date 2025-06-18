@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { updateTask } from "@/lib/functions/taskFunctions";
+import {
+  updateTask,
+  updateNullPriorityTasks,
+} from "@/lib/functions/taskFunctions";
 
 const CalendarTaskForm = ({ open, onClose, task }) => {
   const [title, setTitle] = useState("");
@@ -84,8 +87,25 @@ const CalendarTaskForm = ({ open, onClose, task }) => {
         aiScheduleLocked,
       };
 
+      // If task has null priority, set it to "plan" priority
+      if (task && (task.priority === null || task.priority === undefined)) {
+        taskData.priority = "plan";
+        // inGroupRank will be handled by updateNullPriorityTasks if needed
+      }
+
       if (task) {
         await updateTask(task.id, taskData);
+      }
+
+      // Check if we need to update null priority tasks for this user
+      try {
+        await updateNullPriorityTasks(userData.uid);
+      } catch (updateError) {
+        console.error(
+          "Error updating null priority tasks after task update:",
+          updateError
+        );
+        // Don't fail the entire operation
       }
 
       onClose();

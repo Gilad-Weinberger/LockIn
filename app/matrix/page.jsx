@@ -19,6 +19,7 @@ import {
   storeCurrentTasksHash,
   prioritizeTasks,
   updatePrioritizedTasksState,
+  updateNullPriorityTasks,
 } from "@/lib/functions/taskFunctions";
 
 const MatrixPage = () => {
@@ -71,6 +72,30 @@ const MatrixPage = () => {
             .filter((task) => task.priority === "delete")
             .map((task) => task.id),
         };
+
+        // Check for null priority tasks and handle them
+        const nullPriorityTasks = tasks.filter(
+          (task) =>
+            (task.priority === null || task.priority === undefined) &&
+            !task.isDone
+        );
+
+        if (nullPriorityTasks.length > 0) {
+          try {
+            console.log(
+              `Found ${nullPriorityTasks.length} tasks with null priority during existing prioritization, updating...`
+            );
+            await updateNullPriorityTasks(user.uid);
+            // Add the null priority task IDs to the plan quadrant
+            existingPriorities.plan = [
+              ...existingPriorities.plan,
+              ...nullPriorityTasks.map((task) => task.id),
+            ];
+          } catch (updateError) {
+            console.error("Error updating null priority tasks:", updateError);
+          }
+        }
+
         setPrioritizedTasks(existingPriorities);
         hasRunPrioritization.current = true;
         return;
