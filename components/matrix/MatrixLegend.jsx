@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { getAIPrioritizationTokensLeft } from "@/lib/plans/freePlanFeatures";
+import { getAIPrioritizationTokensLeft } from "@/lib/functions/freePlanLimits";
 import { getUserSubscriptionLevel } from "@/lib/utils/subscription-utils";
 import AIFunctionButton from "@/components/ui/AIFunctionButton";
 

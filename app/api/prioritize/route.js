@@ -16,7 +16,7 @@ import {
   incrementAIPrioritizationTokens,
   getAIPrioritizationTokensLeft,
   hasEnoughAIPrioritizationTokens,
-} from "@/lib/plans/freePlanFeatures";
+} from "@/lib/functions/freePlanLimits";
 import { getUserSubscriptionLevel } from "@/lib/utils/subscription-utils";
 
 export async function POST(request) {

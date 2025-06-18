@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { scheduleTasks } from "@/lib/functions/taskFunctions";
 import { useRouter } from "next/navigation";
-import { getAISchedulingTokensLeft } from "@/lib/plans/freePlanFeatures";
+import { getAISchedulingTokensLeft } from "@/lib/functions/freePlanLimits";
 import { getUserSubscriptionLevel } from "@/lib/utils/subscription-utils";
 
 const SchedulePage = () => {
