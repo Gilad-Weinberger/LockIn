@@ -16,7 +16,7 @@ import PageLayout from "@/components/ui/PageLayout";
 
 const CalendarPage = () => {
   const { tasks: allTasks, isLoading, hasError } = useTasks();
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState("month"); // 'month' or 'week'
   const [selectedDate, setSelectedDate] = useState(null);

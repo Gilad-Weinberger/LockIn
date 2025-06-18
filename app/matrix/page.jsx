@@ -23,7 +23,7 @@ import {
 
 const MatrixPage = () => {
   const { tasks, isLoading, hasError } = useTasks(false); // Only get undone tasks
-  const { user } = useAuth();
+  const { user, userData } = useAuth();
   const [isPrioritizing, setIsPrioritizing] = useState(false);
   const [prioritizedTasks, setPrioritizedTasks] = useState(null);
   const [prioritizeError, setPrioritizeError] = useState("");
