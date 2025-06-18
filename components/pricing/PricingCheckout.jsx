@@ -13,9 +13,9 @@ const PricingCheckout = ({ plan, isAnnual }) => {
     setIsLoading(true);
 
     try {
-      // For free plan, redirect to signup
+      // For free plan, redirect to tasks
       if (plan.name === "Starter") {
-        router.push("/auth/signup");
+        router.push("/tasks");
         setIsLoading(false);
         return;
       }
