@@ -1,14 +1,14 @@
 import { SUBSCRIPTION_LEVELS } from "@/lib/utils/subscription-utils";
 
 const SubscriptionBadge = ({ level }) => {
-  const badges = {
+  const badgeConfig = {
     [SUBSCRIPTION_LEVELS.FREE]: (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+      <span className="px-2 py-1 text-xs font-medium text-gray-600 bg-gray-100 rounded-full">
         Free
       </span>
     ),
-    [SUBSCRIPTION_LEVELS.PROFESSIONAL]: (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+    [SUBSCRIPTION_LEVELS.PRO]: (
+      <span className="px-2 py-1 text-xs font-medium text-blue-600 bg-blue-100 rounded-full">
         Professional
       </span>
     ),
@@ -19,7 +19,7 @@ const SubscriptionBadge = ({ level }) => {
     ),
   };
 
-  return badges[level] || badges[SUBSCRIPTION_LEVELS.FREE];
+  return badgeConfig[level] || badgeConfig[SUBSCRIPTION_LEVELS.FREE];
 };
 
 export default SubscriptionBadge;

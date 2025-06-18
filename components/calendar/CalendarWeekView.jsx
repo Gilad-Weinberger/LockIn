@@ -12,7 +12,7 @@ import {
   calculateAllDayHeight,
 } from "./weekView";
 
-const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
+const CalendarWeekView = ({ currentDate, tasks, googleCalendarEvents = [], onDateClick }) => {
   const [editingTask, setEditingTask] = useState(null);
   const { userData } = useAuth();
   const categories = userData?.categories || [];
@@ -22,8 +22,8 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
 
   // Calculate dynamic all-day section height
   const allDayHeight = useMemo(
-    () => calculateAllDayHeight(weekData.days, tasks),
-    [weekData.days, tasks]
+    () => calculateAllDayHeight(weekData.days, tasks, googleCalendarEvents),
+    [weekData.days, tasks, googleCalendarEvents]
   );
 
   const handleTaskClick = (task) => {
@@ -39,6 +39,7 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
       <WeekViewAllDaySection
         weekDays={weekData.days}
         tasks={tasks}
+        googleCalendarEvents={googleCalendarEvents}
         categories={categories}
         allDayHeight={allDayHeight}
         onTaskClick={handleTaskClick}
@@ -68,6 +69,7 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
           <WeekViewTaskEvents
             weekDays={weekData.days}
             tasks={tasks}
+            googleCalendarEvents={googleCalendarEvents}
             categories={categories}
             onTaskClick={handleTaskClick}
           />

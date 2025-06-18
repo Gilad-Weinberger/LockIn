@@ -26,8 +26,8 @@ const SchedulingRulesSettings = () => {
 
       try {
         const hasProfessional = await hasSubscriptionLevel(
-          user.uid,
-          SUBSCRIPTION_LEVELS.PROFESSIONAL
+          userData?.uid || userData?.id,
+          SUBSCRIPTION_LEVELS.PRO
         );
         setIsProfessionalUser(hasProfessional);
       } catch (error) {
@@ -39,7 +39,7 @@ const SchedulingRulesSettings = () => {
     };
 
     checkSubscription();
-  }, [user?.uid]);
+  }, [user?.uid, userData?.uid, userData?.id]);
 
   useEffect(() => {
     if (userData && isProfessionalUser) {

@@ -3,7 +3,12 @@ import { CATEGORY_COLORS } from "@/lib/functions/taskFunctions";
 
 const CalendarTaskItem = ({ task, categories, onEditTask }) => {
   // Helper function to get category border color
-  const getCategoryBorderColor = (category) => {
+  const getCategoryBorderColor = (category, type) => {
+    // Special styling for Google Calendar events
+    if (type === "google_calendar") {
+      return "border-purple-400";
+    }
+
     if (!category) return "border-gray-400";
 
     const categoryIndex = categories.findIndex((cat) => cat === category);
@@ -13,8 +18,13 @@ const CalendarTaskItem = ({ task, categories, onEditTask }) => {
   };
 
   // Helper function to get category background color
-  const getCategoryBgColor = (category, isDone) => {
+  const getCategoryBgColor = (category, isDone, type) => {
     if (isDone) return "bg-green-50";
+
+    // Special styling for Google Calendar events
+    if (type === "google_calendar") {
+      return "bg-purple-50";
+    }
 
     if (!category) return "bg-gray-50";
 
@@ -44,14 +54,70 @@ const CalendarTaskItem = ({ task, categories, onEditTask }) => {
   };
 
   const formatTime = (date) => {
-    return new Date(
-      date.toDate ? date.toDate() : date
-    ).toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
+    return new Date(date.toDate ? date.toDate() : date).toLocaleTimeString(
+      "en-US",
+      {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }
+    );
   };
+
+  const getEventTime = () => {
+    // Check if it's an all-day event
+    const isAllDay =
+      task.isAllDay ||
+      task.allDay ||
+      (task.type === "google_calendar" &&
+        task.start &&
+        !task.start.includes("T")) ||
+      (task.type === "task" &&
+        task.startDate &&
+        task.endDate &&
+        (() => {
+          const startDate = task.startDate.toDate
+            ? task.startDate.toDate()
+            : new Date(task.startDate);
+          const endDate = task.endDate.toDate
+            ? task.endDate.toDate()
+            : new Date(task.endDate);
+          const startsAtMidnight =
+            startDate.getHours() === 0 && startDate.getMinutes() === 0;
+          const endsAtMidnight =
+            endDate.getHours() === 0 && endDate.getMinutes() === 0;
+          const isMultipleDays =
+            endDate.getDate() !== startDate.getDate() ||
+            endDate.getMonth() !== startDate.getMonth() ||
+            endDate.getFullYear() !== startDate.getFullYear();
+          return isMultipleDays || (startsAtMidnight && endsAtMidnight);
+        })());
+
+    if (isAllDay) {
+      return "All Day";
+    }
+
+    if (task.type === "google_calendar") {
+      if (task.start && task.end) {
+        const startTime = formatTime(new Date(task.start));
+        const endTime = formatTime(new Date(task.end));
+        return `${startTime} - ${endTime}`;
+      } else if (task.start) {
+        return formatTime(new Date(task.start));
+      }
+      return null;
+    } else {
+      // Regular task
+      if (task.startDate && task.endDate) {
+        return `${formatTime(task.startDate)} - ${formatTime(task.endDate)}`;
+      } else if (task.startDate) {
+        return formatTime(task.startDate);
+      }
+      return null;
+    }
+  };
+
+  const eventTime = getEventTime();
 
   return (
     <div
@@ -60,32 +126,33 @@ const CalendarTaskItem = ({ task, categories, onEditTask }) => {
           ? "bg-green-50 border-green-400"
           : `${getCategoryBgColor(
               task.category,
-              task.isDone
-            )} ${getCategoryBorderColor(task.category)}`
+              task.isDone,
+              task.type
+            )} ${getCategoryBorderColor(task.category, task.type)}`
       }`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <h4
-            className={`font-medium ${
-              task.isDone
-                ? "text-green-800 line-through"
-                : "text-gray-900"
-            }`}
-          >
-            {task.title}
-          </h4>
+          <div className="flex items-start">
+            {task.type === "google_calendar" && (
+              <span className="inline-block w-3 h-3 bg-purple-500 rounded-full mr-2 mt-1 flex-shrink-0"></span>
+            )}
+            <h4
+              className={`font-medium ${
+                task.isDone ? "text-green-800 line-through" : "text-gray-900"
+              }`}
+            >
+              {task.title}
+            </h4>
+          </div>
           {task.description && (
             <p className="text-sm text-gray-600 mt-1">{task.description}</p>
           )}
           <div className="flex items-center gap-4 text-sm text-gray-500 mt-2">
-            {task.startDate && (
+            {eventTime && (
               <span className="flex items-center">
                 <ClockIcon />
-                <span className="ml-1">
-                  {formatTime(task.startDate)}
-                  {task.endDate && " - " + formatTime(task.endDate)}
-                </span>
+                <span className="ml-1">{eventTime}</span>
               </span>
             )}
             {task.category && (
@@ -102,18 +169,29 @@ const CalendarTaskItem = ({ task, categories, onEditTask }) => {
               <CheckIcon />
             </div>
           )}
+          {/* Show edit button for both regular tasks and Google Calendar events */}
           <button
             onClick={() => onEditTask(task)}
             className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-100 rounded transition-all duration-200"
-            aria-label="Edit task"
-            title="Edit task"
+            aria-label={`Edit ${
+              task.type === "google_calendar" ? "Google Calendar event" : "task"
+            }`}
+            title={`Edit ${
+              task.type === "google_calendar" ? "Google Calendar event" : "task"
+            }`}
           >
             <EditIcon />
           </button>
+          {/* Show Google Calendar indicator for Google events */}
+          {task.type === "google_calendar" && (
+            <div className="flex-shrink-0 text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded">
+              Google Calendar
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default CalendarTaskItem; 
+export default CalendarTaskItem;

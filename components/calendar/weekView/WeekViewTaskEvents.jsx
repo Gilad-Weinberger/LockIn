@@ -1,14 +1,15 @@
 "use client";
 
-import { getTasksForDate, isAllDayTask, TIME_SLOTS } from "./WeekViewUtils";
+import { getAllEventsForDate, isAllDayTask, TIME_SLOTS } from "./WeekViewUtils";
 import WeekViewTaskEvent from "./WeekViewTaskEvent";
 
-const WeekViewTaskEvents = ({ weekDays, tasks, categories, onTaskClick }) => {
+const WeekViewTaskEvents = ({ weekDays, tasks, googleCalendarEvents = [], categories, onTaskClick }) => {
   return (
     <>
       {weekDays.map((date, dayIndex) => {
-        const dayTasks = getTasksForDate(tasks, date);
-        const timedTasks = dayTasks.filter((task) => !isAllDayTask(task));
+        // Get all events (tasks + Google Calendar) for this date
+        const allEvents = getAllEventsForDate(tasks, googleCalendarEvents, date);
+        const timedEvents = allEvents.filter((event) => !isAllDayTask(event));
 
         // Calculate the column width and position
         const timeColumnWidth = 100; // 100px for time column
@@ -27,10 +28,10 @@ const WeekViewTaskEvents = ({ weekDays, tasks, categories, onTaskClick }) => {
               pointerEvents: "none",
             }}
           >
-            {timedTasks.map((task) => (
+            {timedEvents.map((event) => (
               <WeekViewTaskEvent
-                key={task.id}
-                task={task}
+                key={`${event.type}-${event.id}`}
+                task={event}
                 date={date}
                 categories={categories}
                 onTaskClick={onTaskClick}

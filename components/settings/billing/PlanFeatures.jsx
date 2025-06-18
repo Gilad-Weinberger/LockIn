@@ -4,23 +4,24 @@ const PlanFeatures = ({ subscriptionLevel }) => {
   const getPlanFeatures = (level) => {
     const features = {
       [SUBSCRIPTION_LEVELS.FREE]: [
-        "Basic task management",
-        "Simple Eisenhower Matrix",
-        "Limited AI prioritization",
+        "Up to 50 tasks",
+        "Basic Eisenhower Matrix",
+        "Simple scheduling",
+        "Basic analytics",
       ],
-      [SUBSCRIPTION_LEVELS.PROFESSIONAL]: [
+      [SUBSCRIPTION_LEVELS.PRO]: [
         "Unlimited tasks",
-        "Advanced AI scheduling",
-        "Calendar integration",
+        "AI-powered prioritization",
+        "AI-powered scheduling", 
+        "Google Calendar integration",
         "Custom AI rules",
-        "Priority support",
+        "Advanced analytics",
       ],
       [SUBSCRIPTION_LEVELS.ENTERPRISE]: [
         "Everything in Professional",
-        "Advanced analytics",
         "Custom algorithms",
-        "Dedicated support",
-        "Team collaboration",
+        "Priority support",
+        "Advanced integrations",
       ],
     };
     return features[level] || features[SUBSCRIPTION_LEVELS.FREE];

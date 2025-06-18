@@ -2,18 +2,24 @@
 
 import {
   GRID_STYLE,
-  getTasksForDate,
+  getAllEventsForDate,
   isAllDayTask,
-  getCategoryBgColor,
+  getEventCategoryBgColor,
 } from "./WeekViewUtils";
 
 const WeekViewAllDaySection = ({
   weekDays,
   tasks,
+  googleCalendarEvents = [],
   categories,
   allDayHeight,
   onTaskClick,
 }) => {
+  const handleEventClick = (event) => {
+    // Allow clicking on both regular tasks and Google Calendar events
+    onTaskClick(event);
+  };
+
   return (
     <div
       className="border-b bg-gray-25 flex-shrink-0"
@@ -26,8 +32,9 @@ const WeekViewAllDaySection = ({
         All Day
       </div>
       {weekDays.map((date, index) => {
-        const dayTasks = getTasksForDate(tasks, date);
-        const allDayTasks = dayTasks.filter((task) => isAllDayTask(task));
+        // Get all events (tasks + Google Calendar) for this date
+        const allEvents = getAllEventsForDate(tasks, googleCalendarEvents, date);
+        const allDayEvents = allEvents.filter((event) => isAllDayTask(event));
 
         return (
           <div
@@ -36,26 +43,30 @@ const WeekViewAllDaySection = ({
             style={{ minHeight: `${allDayHeight}px` }}
           >
             <div className="space-y-1">
-              {allDayTasks.slice(0, 2).map((task) => (
+              {allDayEvents.slice(0, 2).map((event) => (
                 <div
-                  key={task.id}
-                  className={`text-xs p-1 rounded truncate cursor-pointer hover:opacity-80 ${
-                    task.isDone
+                  key={`${event.type}-${event.id}`}
+                  className={`text-xs p-1 rounded truncate hover:opacity-80 flex items-center cursor-pointer ${
+                    event.isDone
                       ? "bg-green-100 text-green-800 line-through"
-                      : getCategoryBgColor(
-                          task.category,
+                      : getEventCategoryBgColor(
+                          event.category,
                           categories,
-                          task.isDone
+                          event.isDone,
+                          event.type
                         )
                   }`}
-                  onClick={() => onTaskClick(task)}
+                  onClick={() => handleEventClick(event)}
                 >
-                  {task.title}
+                  {event.type === "google_calendar" && (
+                    <span className="inline-block w-2 h-2 bg-purple-500 rounded-full mr-1 flex-shrink-0"></span>
+                  )}
+                  <span className="truncate">{event.title}</span>
                 </div>
               ))}
-              {allDayTasks.length > 2 && (
+              {allDayEvents.length > 2 && (
                 <div className="text-xs text-gray-500 text-center">
-                  +{allDayTasks.length - 2}
+                  +{allDayEvents.length - 2}
                 </div>
               )}
             </div>

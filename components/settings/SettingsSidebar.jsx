@@ -22,7 +22,7 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
       try {
         const hasProfessional = await hasSubscriptionLevel(
           user.uid,
-          SUBSCRIPTION_LEVELS.PROFESSIONAL
+          SUBSCRIPTION_LEVELS.PRO
         );
         setIsProfessionalUser(hasProfessional);
       } catch (error) {
@@ -132,14 +132,37 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
       ),
       requiresPro: true,
     },
+    {
+      id: "google-calendar",
+      label: "Calendar",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 12h6m-6 4h6"
+          />
+        </svg>
+      ),
+      requiresPro: true,
+    },
   ];
 
-  // Filter settings items based on subscription level
+  // Show all settings items, but disable pro features for non-pro users
   const getVisibleSettingsItems = () => {
-    const allItems = getAllSettingsItems();
-    if (loading) return allItems; // Show all items while loading
-
-    return allItems.filter((item) => !item.requiresPro || isProfessionalUser);
+    return getAllSettingsItems(); // Always show all items
   };
 
   const settingsItems = getVisibleSettingsItems();
@@ -159,24 +182,40 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
         {settingsItems.map((item) => (
           <button
             key={item.id}
-            onClick={() => onSectionChange(item.id)}
+            onClick={() =>
+              item.requiresPro && !isProfessionalUser
+                ? null
+                : onSectionChange(item.id)
+            }
+            disabled={item.requiresPro && !isProfessionalUser}
             className={`
-              w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200
+              w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative
               ${
                 activeSection === item.id
                   ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  : item.requiresPro && !isProfessionalUser
+                  ? "text-gray-400 bg-gray-50 cursor-not-allowed"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               }
             `}
           >
             <span
               className={`mr-3 ${
-                activeSection === item.id ? "text-blue-700" : "text-gray-400"
+                activeSection === item.id
+                  ? "text-blue-700"
+                  : item.requiresPro && !isProfessionalUser
+                  ? "text-gray-300"
+                  : "text-gray-400"
               }`}
             >
               {item.icon}
             </span>
             {item.label}
+            {item.requiresPro && !isProfessionalUser && (
+              <span className="ml-auto text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full">
+                PRO
+              </span>
+            )}
           </button>
         ))}
       </nav>

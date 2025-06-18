@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Navbar from "@/components/ui/Navbar";
-import DropdownMenu from "@/components/ui/DropdownMenu";
 import SettingsSidebar from "@/components/settings/SettingsSidebar";
 import ProfileSettings from "@/components/settings/ProfileSettings";
 import BillingSettings from "@/components/settings/BillingSettings";
 import AISettings from "@/components/settings/AISettings";
 import PrioritizingRulesSettings from "@/components/settings/PrioritizingRulesSettings";
 import SchedulingRulesSettings from "@/components/settings/SchedulingRulesSettings";
+import CalendarSettings from "@/components/settings/CalendarSettings";
 
 const SettingsPage = () => {
   const [activeSection, setActiveSection] = useState("profile");
@@ -25,6 +25,8 @@ const SettingsPage = () => {
         return <PrioritizingRulesSettings />;
       case "scheduling-rules":
         return <SchedulingRulesSettings />;
+      case "google-calendar":
+        return <CalendarSettings />;
       default:
         return <ProfileSettings />;
     }

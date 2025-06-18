@@ -15,6 +15,7 @@ const CalendarContainer = forwardRef(
       currentDate,
       view,
       scheduledTasks,
+      googleCalendarEvents = [],
       isScheduling,
       scheduleError,
       onViewChange,
@@ -22,6 +23,7 @@ const CalendarContainer = forwardRef(
       onNext,
       onToday,
       onSchedule,
+      onRefreshGoogleCalendar,
     },
     ref
   ) => {
@@ -82,12 +84,14 @@ const CalendarContainer = forwardRef(
                   <CalendarMonthView
                     currentDate={currentDate}
                     tasks={scheduledTasks}
+                    googleCalendarEvents={googleCalendarEvents}
                     onDateClick={handleDateClick}
                   />
                 ) : (
                   <CalendarWeekView
                     currentDate={currentDate}
                     tasks={scheduledTasks}
+                    googleCalendarEvents={googleCalendarEvents}
                     onDateClick={handleDateClick}
                   />
                 )}
@@ -101,6 +105,8 @@ const CalendarContainer = forwardRef(
           onClose={handleCloseModal}
           selectedDate={selectedDate}
           tasks={scheduledTasks}
+          googleCalendarEvents={googleCalendarEvents}
+          onRefreshGoogleCalendar={onRefreshGoogleCalendar}
         />
       </div>
     );

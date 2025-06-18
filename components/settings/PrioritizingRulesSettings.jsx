@@ -26,12 +26,12 @@ const PrioritizingRulesSettings = () => {
 
       try {
         const hasProfessional = await hasSubscriptionLevel(
-          user.uid,
-          SUBSCRIPTION_LEVELS.PROFESSIONAL
+          userData?.uid || userData?.id,
+          SUBSCRIPTION_LEVELS.PRO
         );
         setIsProfessionalUser(hasProfessional);
       } catch (error) {
-        console.error("Error checking subscription level:", error);
+        console.error("Error checking subscription:", error);
         setIsProfessionalUser(false);
       } finally {
         setSubscriptionLoading(false);
@@ -39,7 +39,7 @@ const PrioritizingRulesSettings = () => {
     };
 
     checkSubscription();
-  }, [user?.uid]);
+  }, [user?.uid, userData?.uid, userData?.id]);
 
   useEffect(() => {
     if (userData && isProfessionalUser) {

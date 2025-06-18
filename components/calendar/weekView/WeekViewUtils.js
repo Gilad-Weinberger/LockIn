@@ -95,8 +95,76 @@ export const getTasksForDate = (tasks, date) => {
   });
 };
 
-// Helper function to determine if a task is all-day
+// Filter Google Calendar events for a specific date
+export const getGoogleCalendarEventsForDate = (googleCalendarEvents, date) => {
+  if (!googleCalendarEvents || googleCalendarEvents.length === 0) return [];
+
+  return googleCalendarEvents.filter((event) => {
+    if (!event.start) return false;
+
+    const eventStart = new Date(event.start);
+    const eventEnd = event.end ? new Date(event.end) : eventStart;
+
+    // Check if the event occurs on this date
+    const currentDateStart = new Date(date);
+    currentDateStart.setHours(0, 0, 0, 0);
+    const currentDateEnd = new Date(date);
+    currentDateEnd.setHours(23, 59, 59, 999);
+
+    return eventStart <= currentDateEnd && eventEnd >= currentDateStart;
+  });
+};
+
+// Get all events (tasks + Google Calendar) for a specific date
+export const getAllEventsForDate = (tasks, googleCalendarEvents, date) => {
+  const events = [];
+
+  // Add regular tasks
+  const dayTasks = getTasksForDate(tasks, date);
+  events.push(...dayTasks.map((task) => ({ ...task, type: "task" })));
+
+  // Get Google Calendar event IDs that are already synced as tasks
+  const syncedGoogleEventIds = new Set(
+    dayTasks
+      .filter((task) => task.googleCalendarEventId)
+      .map((task) => task.googleCalendarEventId)
+  );
+
+  // Add Google Calendar events (but exclude ones that are already synced as tasks)
+  const dayGoogleEvents = getGoogleCalendarEventsForDate(
+    googleCalendarEvents,
+    date
+  );
+  const uniqueGoogleEvents = dayGoogleEvents.filter(
+    (event) => !syncedGoogleEventIds.has(event.id)
+  );
+
+  events.push(
+    ...uniqueGoogleEvents.map((event) => ({
+      ...event,
+      type: "google_calendar",
+      id: event.id || `google-${Date.now()}-${Math.random()}`,
+      title: event.title || event.summary || "Google Calendar Event",
+      category: "Google Calendar",
+      // Convert Google Calendar event times to match task format
+      startDate: event.start ? new Date(event.start) : null,
+      endDate: event.end ? new Date(event.end) : null,
+      // Mark as all-day if it doesn't have specific times
+      isAllDay: event.allDay || !event.start?.includes("T"),
+      isDone: false, // Google Calendar events can't be marked as done
+    }))
+  );
+
+  return events;
+};
+
+// Helper function to determine if a task or Google Calendar event is all-day
 export const isAllDayTask = (task) => {
+  // Handle Google Calendar events
+  if (task.type === "google_calendar") {
+    return task.isAllDay || task.allDay || !task.start?.includes("T");
+  }
+
   // If task has startDate and endDate, check if it's an all-day event
   if (task.startDate && task.endDate) {
     const startDate = task.startDate.toDate
@@ -134,14 +202,24 @@ export const isAllDayTask = (task) => {
 
 // Calculate task positioning and dimensions for time grid
 export const getTaskStyle = (task, date) => {
-  if (!task.startDate || !task.endDate) return null;
+  let startDate, endDate;
 
-  const startDate = task.startDate.toDate
-    ? task.startDate.toDate()
-    : new Date(task.startDate);
-  const endDate = task.endDate.toDate
-    ? task.endDate.toDate()
-    : new Date(task.endDate);
+  // Handle Google Calendar events
+  if (task.type === "google_calendar") {
+    startDate = task.start ? new Date(task.start) : null;
+    endDate = task.end ? new Date(task.end) : startDate;
+  } else {
+    // Handle regular tasks
+    if (!task.startDate || !task.endDate) return null;
+    startDate = task.startDate.toDate
+      ? task.startDate.toDate()
+      : new Date(task.startDate);
+    endDate = task.endDate.toDate
+      ? task.endDate.toDate()
+      : new Date(task.endDate);
+  }
+
+  if (!startDate || !endDate) return null;
 
   // Get the start and end of the current day
   const dayStart = new Date(date);
@@ -192,46 +270,116 @@ export const isToday = (date) => {
 };
 
 // Calculate dynamic all-day section height
-export const calculateAllDayHeight = (weekDays, tasks) => {
+export const calculateAllDayHeight = (
+  weekDays,
+  tasks,
+  googleCalendarEvents = []
+) => {
   let maxAllDayEvents = 0;
 
   weekDays.forEach((date) => {
-    const dayTasks = getTasksForDate(tasks, date);
-    const allDayTasks = dayTasks.filter((task) => isAllDayTask(task));
-    maxAllDayEvents = Math.max(maxAllDayEvents, allDayTasks.length);
+    const allEvents = getAllEventsForDate(tasks, googleCalendarEvents, date);
+    const allDayEvents = allEvents.filter((event) => isAllDayTask(event));
+    maxAllDayEvents = Math.max(maxAllDayEvents, allDayEvents.length);
   });
 
   return (maxAllDayEvents + 1) * 20;
 };
 
-// Format display time for tasks
+// Format display time for tasks and Google Calendar events
 export const getDisplayTime = (task) => {
   let displayTime = "";
   let endTime = "";
 
-  if (task.startDate && task.endDate) {
-    const startDate = task.startDate.toDate
-      ? task.startDate.toDate()
-      : new Date(task.startDate);
-    const endDate = task.endDate.toDate
-      ? task.endDate.toDate()
-      : new Date(task.endDate);
+  // Handle Google Calendar events
+  if (task.type === "google_calendar") {
+    if (task.start && task.end) {
+      const startDate = new Date(task.start);
+      const endDate = new Date(task.end);
 
-    displayTime = startDate.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-    endTime = endDate.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  } else if (task.time) {
-    displayTime = task.time;
+      displayTime = startDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      endTime = endDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+  } else {
+    // Handle regular tasks
+    if (task.startDate && task.endDate) {
+      const startDate = task.startDate.toDate
+        ? task.startDate.toDate()
+        : new Date(task.startDate);
+      const endDate = task.endDate.toDate
+        ? task.endDate.toDate()
+        : new Date(task.endDate);
+
+      displayTime = startDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      endTime = endDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } else if (task.time) {
+      displayTime = task.time;
+    }
   }
 
   return { displayTime, endTime };
+};
+
+// Helper function to get category background color for both tasks and Google Calendar events
+export const getEventCategoryBgColor = (category, categories, isDone, type) => {
+  if (isDone) return "bg-green-100 text-green-800";
+
+  // Special styling for Google Calendar events
+  if (type === "google_calendar") {
+    return "bg-purple-100 text-purple-800";
+  }
+
+  if (!category) return "bg-gray-100 text-gray-800";
+
+  const categoryIndex = categories.findIndex((cat) => cat === category);
+  if (categoryIndex === -1) return "bg-gray-100 text-gray-800";
+
+  const colorIndex = categoryIndex % CATEGORY_COLORS.length;
+  const bgColors = [
+    "bg-blue-100 text-blue-800",
+    "bg-pink-100 text-pink-800",
+    "bg-green-100 text-green-800",
+    "bg-yellow-100 text-yellow-800",
+    "bg-purple-100 text-purple-800",
+    "bg-red-100 text-red-800",
+    "bg-indigo-100 text-indigo-800",
+    "bg-teal-100 text-teal-800",
+    "bg-orange-100 text-orange-800",
+    "bg-cyan-100 text-cyan-800",
+    "bg-lime-100 text-lime-800",
+    "bg-amber-100 text-amber-800",
+    "bg-fuchsia-100 text-fuchsia-800",
+    "bg-emerald-100 text-emerald-800",
+    "bg-sky-100 text-sky-800",
+  ];
+
+  return bgColors[colorIndex];
+};
+
+// Helper function to get border color for Google Calendar events
+export const getEventBorderColor = (category, categories, type) => {
+  // Special border for Google Calendar events
+  if (type === "google_calendar") {
+    return "border-purple-500";
+  }
+
+  return getCategoryColor(category, categories);
 };
 
 // Grid style configuration

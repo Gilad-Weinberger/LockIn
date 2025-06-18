@@ -1,6 +1,7 @@
 "use client";
 
 import AIFunctionButton from "@/components/ui/AIFunctionButton";
+import GoogleCalendarButton from "@/components/calendar/GoogleCalendarButton";
 
 const CalendarHeader = ({
   currentDate,
@@ -100,7 +101,7 @@ const CalendarHeader = ({
           </h1>
         </div>
 
-        {/* Right section - View toggle and Schedule button */}
+        {/* Right section - View toggle, Google Calendar, and Schedule button */}
         <div className="flex items-center space-x-4">
           <div className="bg-gray-100 rounded-lg p-1 flex">
             <button
@@ -124,6 +125,9 @@ const CalendarHeader = ({
               Week
             </button>
           </div>
+
+          {/* Google Calendar button */}
+          <GoogleCalendarButton />
 
           {/* Schedule button */}
           {onSchedule && (
