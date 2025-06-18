@@ -18,3 +18,8 @@ export { default as MatrixLoadingState } from "./MatrixLoadingState";
 export { default as MatrixErrorState } from "./MatrixErrorState";
 export { default as MatrixEmptyState } from "./MatrixEmptyState";
 export { default as MatrixErrorBanner } from "./MatrixErrorBanner";
+
+// Page Components and Hooks (for better organization)
+export { usePrioritizationManager } from "./MatrixPrioritizationManager";
+export { MatrixAutoEffects } from "./MatrixAutoEffects";
+export { MatrixContent } from "./MatrixContent";
