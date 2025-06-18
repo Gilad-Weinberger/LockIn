@@ -65,6 +65,7 @@ const CalendarTaskForm = ({ open, onClose, task }) => {
     }
   }, [task, open]);
 
+  // Don't render if modal is not open
   if (!open) return null;
 
   const handleSubmit = async (e) => {
@@ -98,14 +99,16 @@ const CalendarTaskForm = ({ open, onClose, task }) => {
       }
 
       // Check if we need to update null priority tasks for this user
-      try {
-        await updateNullPriorityTasks(userData.uid);
-      } catch (updateError) {
-        console.error(
-          "Error updating null priority tasks after task update:",
-          updateError
-        );
-        // Don't fail the entire operation
+      if (userData?.uid) {
+        try {
+          await updateNullPriorityTasks(userData.uid);
+        } catch (updateError) {
+          console.error(
+            "Error updating null priority tasks after task update:",
+            updateError
+          );
+          // Don't fail the entire operation
+        }
       }
 
       onClose();
@@ -225,7 +228,9 @@ const CalendarTaskForm = ({ open, onClose, task }) => {
             </div>
           </div>
 
-          {categories.length > 0 ? (
+          {!userData ? (
+            <div className="text-sm text-gray-500">Loading categories...</div>
+          ) : categories.length > 0 ? (
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -249,10 +254,10 @@ const CalendarTaskForm = ({ open, onClose, task }) => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-            disabled={isLoading || categories.length === 0}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || !userData || categories.length === 0}
           >
-            {isLoading ? "Saving..." : "Save Task"}
+            {isLoading ? "Saving..." : !userData ? "Loading..." : "Save Task"}
           </button>
           {hasError && <p className="text-red-500 text-sm">{hasError}</p>}
         </form>

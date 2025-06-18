@@ -57,16 +57,21 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
           }
         `}</style>
 
-        {/* Time grid background */}
-        <WeekViewTimeGrid weekDays={weekData.days} onDateClick={onDateClick} />
+        <div className="relative">
+          {/* Time grid background */}
+          <WeekViewTimeGrid
+            weekDays={weekData.days}
+            onDateClick={onDateClick}
+          />
 
-        {/* Positioned task events */}
-        <WeekViewTaskEvents
-          weekDays={weekData.days}
-          tasks={tasks}
-          categories={categories}
-          onTaskClick={handleTaskClick}
-        />
+          {/* Positioned task events */}
+          <WeekViewTaskEvents
+            weekDays={weekData.days}
+            tasks={tasks}
+            categories={categories}
+            onTaskClick={handleTaskClick}
+          />
+        </div>
       </div>
 
       {/* Edit Task Modal */}

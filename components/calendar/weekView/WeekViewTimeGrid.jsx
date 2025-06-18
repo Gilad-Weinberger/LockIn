@@ -4,7 +4,7 @@ import { GRID_STYLE, TIME_SLOTS } from "./WeekViewUtils";
 
 const WeekViewTimeGrid = ({ weekDays, onDateClick }) => {
   return (
-    <div className="relative" style={GRID_STYLE}>
+    <div style={GRID_STYLE}>
       {/* Time slots (background grid) */}
       {TIME_SLOTS.map((hour) => (
         <div key={hour} className="contents">
