@@ -102,7 +102,7 @@ const GoogleCalendarButton = () => {
 
   const handleConnect = async () => {
     if (!canUseFeature) {
-      setShowPaywall(true);
+      router.push("/settings");
       return;
     }
 
@@ -159,13 +159,7 @@ const GoogleCalendarButton = () => {
   return (
     <>
       <button
-        onClick={
-          !canUseFeature
-            ? () => setShowPaywall(true)
-            : isConnected
-            ? handleDisconnect
-            : handleConnect
-        }
+        onClick={isConnected ? handleDisconnect : handleConnect}
         disabled={isConnecting}
         className={`
           flex items-center space-x-2 px-4 py-2 text-sm font-medium rounded-lg
@@ -174,8 +168,8 @@ const GoogleCalendarButton = () => {
             isConnected
               ? "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
               : canUseFeature
-              ? "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-              : "bg-gray-50 text-gray-400 border-gray-200 cursor-pointer"
+              ? "bg-white text-gray-700 border-gray-200 hover:bg-gray-50 cursor-pointer"
+              : "bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed"
           }
           ${isConnecting ? "opacity-50 cursor-not-allowed" : ""}
         `}

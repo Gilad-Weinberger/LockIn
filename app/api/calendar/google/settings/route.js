@@ -85,6 +85,8 @@ export async function GET(request) {
     const userData = userDoc.data();
     const googleCalendar = userData.googleCalendar || {};
 
+    // Always return the settings (even for free users)
+    // The subscription check should be done client-side before making API calls
     return NextResponse.json({
       connected: googleCalendar.connected || false,
       autoSync: googleCalendar.autoSync || false,

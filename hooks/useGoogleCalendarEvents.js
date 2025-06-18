@@ -1,18 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { canAccessFeature } from "@/lib/utils/subscription-utils";
 
 export const useGoogleCalendarEvents = (currentDate, view) => {
   const { user } = useAuth();
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [canUseGoogleCalendar, setCanUseGoogleCalendar] = useState(false);
 
   const getDateRange = useCallback(() => {
     if (!currentDate) return null;
 
     let timeMin, timeMax;
 
-    if (view === 'week') {
+    if (view === "week") {
       // Get the start and end of the current week
       const startOfWeek = new Date(currentDate);
       startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
@@ -26,10 +28,18 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
       timeMax = endOfWeek.toISOString();
     } else {
       // Get the start and end of the current month
-      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const startOfMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        1
+      );
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+      const endOfMonth = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        0
+      );
       endOfMonth.setHours(23, 59, 59, 999);
 
       timeMin = startOfMonth.toISOString();
@@ -39,8 +49,34 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
     return { timeMin, timeMax };
   }, [currentDate, view]);
 
+  // Check subscription access
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!user?.uid) {
+        setCanUseGoogleCalendar(false);
+        return;
+      }
+
+      try {
+        const hasAccess = await canAccessFeature(user.uid, "google_calendar");
+        setCanUseGoogleCalendar(hasAccess);
+      } catch (error) {
+        console.error("Error checking Google Calendar access:", error);
+        setCanUseGoogleCalendar(false);
+      }
+    };
+
+    checkAccess();
+  }, [user?.uid]);
+
   const fetchEvents = useCallback(async () => {
     if (!user?.uid) {
+      setEvents([]);
+      return;
+    }
+
+    // Don't attempt to fetch events if user doesn't have access
+    if (!canUseGoogleCalendar) {
       setEvents([]);
       return;
     }
@@ -64,20 +100,26 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
         const errorData = await response.json();
         if (response.status === 401) {
           // Token expired or invalid, but not a critical error
-          console.warn('Google Calendar access token expired');
+          console.warn("Google Calendar access token expired");
+          setEvents([]);
+        } else if (response.status === 403) {
+          // Pro subscription required - this shouldn't happen now but just in case
+          console.warn(
+            "Pro subscription required for Google Calendar features"
+          );
           setEvents([]);
         } else {
-          throw new Error(errorData.error || 'Failed to fetch events');
+          throw new Error(errorData.error || "Failed to fetch events");
         }
       }
     } catch (err) {
-      console.error('Error fetching Google Calendar events:', err);
+      console.error("Error fetching Google Calendar events:", err);
       setError(err.message);
       setEvents([]);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.uid, getDateRange]);
+  }, [user?.uid, getDateRange, canUseGoogleCalendar]);
 
   // Fetch events when dependencies change
   useEffect(() => {
@@ -95,4 +137,4 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
     error,
     refreshEvents,
   };
-}; 
+};

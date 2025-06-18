@@ -11,7 +11,10 @@ export const useGoogleCalendarSync = () => {
 
     try {
       const hasAccess = await canAccessFeature(user.uid, "google_calendar");
-      if (!hasAccess) return false;
+      if (!hasAccess) {
+        // Don't log as error since this is expected for free users
+        return false;
+      }
 
       // Check if user has Google Calendar connected and auto-sync enabled
       const response = await fetch(
