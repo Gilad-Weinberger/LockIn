@@ -4,9 +4,18 @@ import { useState } from "react";
 import Navbar from "../../components/ui/Navbar";
 import PricingHeader from "../../components/pricing/PricingHeader";
 import PricingGrid from "../../components/pricing/PricingGrid";
+import { useAuth } from "@/context/AuthContext";
+import { markPricingAsShown } from "@/lib/functions/userFunctions";
 
 const PricingPage = () => {
   const [isAnnual, setIsAnnual] = useState(true);
+  const { userData } = useAuth();
+
+  useEffect(() => {
+    if (userData) {
+      markPricingAsShown(userData.id);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">

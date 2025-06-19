@@ -7,6 +7,7 @@ import {
   createUser,
   checkAdminStatus,
 } from "@/lib/functions/userFunctions";
+import { hasPaymentAccess } from "@/lib/utils/subscription-utils";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext({});
@@ -79,6 +80,14 @@ export const AuthProvider = ({ children }) => {
       if (user) {
         setUser(user);
         await handleCreateUser(user);
+        const hasAccess = await hasPaymentAccess(userData.id);
+        if (hasAccess) {
+          router.push("/tasks");
+        }
+        const hasShownPricing = await hasShownPricing(userData.id);
+        if (!hasShownPricing) {
+          router.push("/pricing");
+        }
       } else {
         setUser(null);
         setUserData(null);
