@@ -7,7 +7,7 @@ import {
   signInWithGoogle,
   resetPassword,
 } from "../../../lib/auth";
-import { createUser, getUserData } from "../../../lib/functions/userFunctions";
+import { createUser, getUserData } from "@/lib/functions/userFunctions";
 
 // Components
 import AuthLayout from "../../../components/auth/AuthLayout";

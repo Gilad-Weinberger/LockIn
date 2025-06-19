@@ -2,16 +2,12 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import crypto from "crypto";
 import config from "@/lib/config";
-import { updateUserPaymentInfo } from "@/lib/functions/userFunctions";
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
+  updateUserPaymentInfo,
+  getUserData,
+  findUserByEmail,
+  findUserByCustomerId,
+} from "@/lib/functions/userFunctions";
 
 // This is where we receive LemonSqueezy webhook events
 // It used to update the user data, send emails, etc...
@@ -63,22 +59,13 @@ export async function POST(req) {
 
         // Get or create the user. userId is normally passed in the checkout session (custom_data) to identify the user when we get the webhook event
         if (userId) {
-          userRef = doc(db, "users", userId);
-          const userDoc = await getDoc(userRef);
-          if (userDoc.exists()) {
-            userDocData = userDoc.data();
-          } else {
+          userDocData = await getUserData(userId);
+          if (!userDocData) {
             throw new Error("User not found with ID:", userId);
           }
         } else if (email) {
-          const usersCollection = collection(db, "users");
-          const q = query(usersCollection, where("email", "==", email));
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            userDocData = querySnapshot.docs[0].data();
-            userRef = querySnapshot.docs[0].ref;
-          } else {
+          userDocData = await findUserByEmail(email);
+          if (!userDocData) {
             throw new Error("No user found with email:", email);
           }
         } else {
@@ -115,17 +102,10 @@ export async function POST(req) {
           // Don't throw error, just log it and continue
         }
 
-        // Find user by lemonsqueezyCustomerId in Firestore
-        const usersCollection = collection(db, "users");
-        const q = query(
-          usersCollection,
-          where("lemonsqueezyCustomerId", "==", customerId)
-        );
-        const querySnapshot = await getDocs(q);
+        // Find user by lemonsqueezyCustomerId
+        const userDocData = await findUserByCustomerId(customerId);
 
-        if (!querySnapshot.empty) {
-          const userDocData = querySnapshot.docs[0].data();
-
+        if (userDocData) {
           // Update user payment info with new variant
           await updateUserPaymentInfo(
             userDocData.id,
@@ -145,17 +125,10 @@ export async function POST(req) {
       }
 
       case "subscription_cancelled": {
-        // Find user by lemonsqueezyCustomerId in Firestore
-        const usersCollection = collection(db, "users");
-        const q = query(
-          usersCollection,
-          where("lemonsqueezyCustomerId", "==", customerId)
-        );
-        const querySnapshot = await getDocs(q);
+        // Find user by lemonsqueezyCustomerId
+        const userDocData = await findUserByCustomerId(customerId);
 
-        if (!querySnapshot.empty) {
-          const userDocData = querySnapshot.docs[0].data();
-
+        if (userDocData) {
           // Update user access status using the dedicated function
           await updateUserPaymentInfo(
             userDocData.id,

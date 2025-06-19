@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUpWithEmail, signInWithGoogle } from "../../../lib/auth";
-import { createUser, getUserData } from "../../../lib/functions/userFunctions";
+import { createUser, getUserData } from "@/lib/functions/userFunctions";
 
 // Components
 import AuthLayout from "../../../components/auth/AuthLayout";

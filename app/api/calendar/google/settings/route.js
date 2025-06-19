@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { canAccessFeature } from "@/lib/utils/subscription-utils";
-import { getUserData } from "@/lib/functions/userFunctions";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import {
+  updateGoogleCalendarSettings,
+  getGoogleCalendarSettings,
+} from "@/lib/functions/googleCalendarFunctions";
 
 // Calendar settings API route
 
@@ -32,25 +33,28 @@ export async function POST(request) {
     }
 
     // Update user document with new settings
-    const updateData = {};
+    const settings = {};
 
     if (typeof autoSync === "boolean") {
-      updateData["googleCalendar.autoSync"] = autoSync;
+      settings.autoSync = autoSync;
     }
 
     if (typeof showGoogleEvents === "boolean") {
-      updateData["googleCalendar.showGoogleEvents"] = showGoogleEvents;
+      settings.showGoogleEvents = showGoogleEvents;
     }
 
-    if (Object.keys(updateData).length === 0) {
+    if (Object.keys(settings).length === 0) {
       return NextResponse.json(
         { error: "No valid settings to update" },
         { status: 400 }
       );
     }
 
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, updateData);
+    const result = await updateGoogleCalendarSettings(userId, settings);
+
+    if (!result.success) {
+      throw new Error("Failed to update settings");
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -74,26 +78,12 @@ export async function GET(request) {
       );
     }
 
-    // Get user document
-    const userRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userRef);
-
-    if (!userDoc.exists()) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    const userData = userDoc.data();
-    const googleCalendar = userData.googleCalendar || {};
+    // Get user calendar settings
+    const settings = await getGoogleCalendarSettings(userId);
 
     // Always return the settings (even for free users)
     // The subscription check should be done client-side before making API calls
-    return NextResponse.json({
-      connected: googleCalendar.connected || false,
-      autoSync: googleCalendar.autoSync || false,
-      showGoogleEvents: googleCalendar.showGoogleEvents !== false, // Default to true
-      calendarName: googleCalendar.calendarName || "",
-      connectedAt: googleCalendar.connectedAt || null,
-    });
+    return NextResponse.json(settings);
   } catch (error) {
     console.error("Error fetching calendar settings:", error);
     return NextResponse.json(
