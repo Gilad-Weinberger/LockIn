@@ -7,7 +7,10 @@ import {
   createUser,
   checkAdminStatus,
 } from "@/lib/functions/userFunctions";
-import { hasPaymentAccess } from "@/lib/utils/subscription-utils";
+import {
+  hasPaymentAccess,
+  hasShownPricing,
+} from "@/lib/utils/subscription-utils";
 import { useRouter } from "next/navigation";
 
 const AuthContext = createContext({});
@@ -55,12 +58,18 @@ export const AuthProvider = ({ children }) => {
 
   const handleCreateUser = async (user) => {
     try {
+      // createUser function handles both new and existing users:
+      // - If user doesn't exist: creates new user and returns newUserData
+      // - If user exists: returns existing userDoc.data()
       const userData = await createUser(user);
+      console.log("userData", userData);
       setUserData(userData);
       // Check admin status after getting user data
       await checkUserAdminStatus(user.uid);
+      return userData; // Return userData for both new and existing users
     } catch (error) {
       console.error("Error creating/fetching user:", error);
+      return null; // Return null on error
     }
   };
 
@@ -79,14 +88,21 @@ export const AuthProvider = ({ children }) => {
 
       if (user) {
         setUser(user);
-        await handleCreateUser(user);
+        const userData = await handleCreateUser(user);
+        if (!userData) {
+          setLoading(false);
+          setInitialLoading(false);
+          return;
+        }
+        console.log("userData", userData);
         const hasAccess = await hasPaymentAccess(userData.id);
         if (hasAccess) {
           router.push("/tasks");
-        }
-        const hasShownPricing = await hasShownPricing(userData.id);
-        if (!hasShownPricing) {
-          router.push("/pricing");
+        } else {
+          const hasShownPricingResult = await hasShownPricing(userData.id);
+          if (!hasShownPricingResult) {
+            router.push("/pricing");
+          }
         }
       } else {
         setUser(null);
