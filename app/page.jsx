@@ -6,7 +6,7 @@ import {
   Testimonials,
   Pricing,
   FAQ,
-  Footer
+  Footer,
 } from "@/components/home";
 
 export default function Home() {

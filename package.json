@@ -17,6 +17,7 @@
     "framer-motion": "^12.17.3",
     "google-auth-library": "^10.1.0",
     "googleapis": "^150.0.1",
+    "mongoose": "^8.16.0",
     "next": "15.3.3",
     "posthog-js": "^1.252.0",
     "posthog-node": "^5.1.0",
