@@ -90,7 +90,7 @@ const StepBar = () => {
             </Link>
 
             {/* Connector Line */}
-            {index < steps.length - 1 && (
+            {index < steps?.length - 1 && (
               <div className="flex-1 mx-4 relative">
                 <div className="h-0.5 bg-gray-200 rounded-full"></div>
                 <div

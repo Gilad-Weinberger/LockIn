@@ -32,7 +32,7 @@ const AddCategoryDialog = ({
       return;
     }
 
-    if (trimmedName.length > 50) {
+    if (trimmedName?.length > 50) {
       setError("Category name must be less than 50 characters");
       return;
     }

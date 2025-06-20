@@ -150,7 +150,7 @@ const TaskForm = ({ open, onClose, task }) => {
             />
             {taskType === "deadline" ? "Completed" : "Attended"}
           </label>
-          {categories.length > 0 ? (
+          {categories?.length > 0 ? (
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -174,7 +174,7 @@ const TaskForm = ({ open, onClose, task }) => {
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
-            disabled={isLoading || categories.length === 0}
+            disabled={isLoading || categories?.length === 0}
           >
             {isLoading
               ? "Saving..."

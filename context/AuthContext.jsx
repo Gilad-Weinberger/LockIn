@@ -59,8 +59,10 @@ export const AuthProvider = ({ children }) => {
       setUserData(userData);
       // Check admin status after getting user data
       await checkUserAdminStatus(user.uid);
+      return userData; // Return userData so it can be used immediately
     } catch (error) {
       console.error("Error creating/fetching user:", error);
+      return null;
     }
   };
 
@@ -79,14 +81,18 @@ export const AuthProvider = ({ children }) => {
 
       if (user) {
         setUser(user);
-        await handleCreateUser(user);
-        const hasAccess = await hasPaymentAccess(userData.id);
-        if (hasAccess) {
-          router.push("/tasks");
-        }
-        const hasShownPricing = await hasShownPricing(userData.id);
-        if (!hasShownPricing) {
-          router.push("/pricing");
+        const userDataResult = await handleCreateUser(user);
+
+        if (userDataResult) {
+          const hasAccess = await hasPaymentAccess(userDataResult.id);
+          if (hasAccess) {
+            router.push("/tasks");
+          }
+
+          // Check if user has seen pricing page directly from userData
+          if (!userDataResult.pricingShown) {
+            router.push("/pricing");
+          }
         }
       } else {
         setUser(null);

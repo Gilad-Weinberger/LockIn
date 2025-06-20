@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/ui/Navbar";
 import PricingHeader from "../../components/pricing/PricingHeader";
 import PricingGrid from "../../components/pricing/PricingGrid";
@@ -13,9 +13,9 @@ const PricingPage = () => {
 
   useEffect(() => {
     if (userData) {
-      markPricingAsShown(userData.id);
+      markPricingAsShown(userData._id);
     }
-  }, []);
+  }, [userData]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">

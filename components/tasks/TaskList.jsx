@@ -66,10 +66,8 @@ const TaskList = ({ onEdit }) => {
   const hasUndoneTasks = tasks.some((task) => !task.isDone);
 
   // Group tasks by category
-  const { tasksByCategory, uncategorized } = groupTasksByCategory(
-    tasks,
-    categories
-  );
+  const tasksByCategory = groupTasksByCategory(tasks, categories);
+  const uncategorized = tasksByCategory[""] || [];
 
   const handleDeleteCategory = (categoryName) => {
     const taskCount = tasksByCategory[categoryName]?.length || 0;
@@ -161,7 +159,8 @@ const TaskList = ({ onEdit }) => {
     return <div className="text-center text-red-500 py-8">{hasError}</div>;
 
   // Check if there are no categories and no uncategorized tasks
-  const hasNoCategories = categories.length === 0 && uncategorized.length === 0;
+  const hasNoCategories =
+    categories?.length === 0 && uncategorized?.length === 0;
 
   // If no categories exist, show centered add category button
   if (hasNoCategories) {
@@ -218,12 +217,12 @@ const TaskList = ({ onEdit }) => {
 
   // Create a combined array of categories and uncategorized with the add button positioned correctly
   const allItems = [...categories];
-  if (uncategorized.length > 0) {
+  if (uncategorized?.length > 0) {
     allItems.push("uncategorized");
   }
 
   // Insert the add button at position 3 (4th element) if there are 4+ items, otherwise at the end
-  const addButtonPosition = allItems.length >= 4 ? 3 : allItems.length;
+  const addButtonPosition = allItems?.length >= 4 ? 3 : allItems?.length;
   allItems.splice(addButtonPosition, 0, "add-category");
 
   return (
@@ -269,14 +268,14 @@ const TaskList = ({ onEdit }) => {
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-semibold text-lg">Uncategorized</span>
                   <span className="text-xs bg-gray-200 rounded px-2 py-0.5">
-                    {uncategorized.length}
+                    {uncategorized?.length}
                   </span>
                 </div>
                 <div className="space-y-4">
                   <AnimatePresence>
                     {sortTasksByCompletion(uncategorized).map((task) => (
                       <motion.div
-                        key={task.id}
+                        key={task._id}
                         layout
                         initial={{ opacity: 0, x: 40 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -303,14 +302,14 @@ const TaskList = ({ onEdit }) => {
             <div
               key={cat}
               className={`bg-gray-50 rounded-lg border-t-4 ${
-                CATEGORY_COLORS[categoryIndex % CATEGORY_COLORS.length]
+                CATEGORY_COLORS[categoryIndex % CATEGORY_COLORS?.length]
               } shadow p-4 min-h-[300px]`}
             >
               <div className="flex items-center justify-between mb-2 group">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-lg">{cat}</span>
                   <span className="text-xs bg-gray-200 rounded px-2 py-0.5">
-                    {tasksByCategory[cat].length}
+                    {tasksByCategory[cat]?.length}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
@@ -334,25 +333,28 @@ const TaskList = ({ onEdit }) => {
               </div>
               <div className="space-y-4">
                 <AnimatePresence>
-                  {sortTasksByCompletion(tasksByCategory[cat]).length === 0 ? (
+                  {sortTasksByCompletion(tasksByCategory[cat] || [])?.length ===
+                  0 ? (
                     <div className="text-center text-gray-400">No tasks</div>
                   ) : (
-                    sortTasksByCompletion(tasksByCategory[cat]).map((task) => (
-                      <motion.div
-                        key={task.id}
-                        layout
-                        initial={{ opacity: 0, x: 40 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -40 }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 40,
-                        }}
-                      >
-                        <TaskCard task={task} onEdit={onEdit} />
-                      </motion.div>
-                    ))
+                    sortTasksByCompletion(tasksByCategory[cat] || []).map(
+                      (task) => (
+                        <motion.div
+                          key={task._id}
+                          layout
+                          initial={{ opacity: 0, x: 40 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -40 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 40,
+                          }}
+                        >
+                          <TaskCard task={task} onEdit={onEdit} />
+                        </motion.div>
+                      )
+                    )
                   )}
                 </AnimatePresence>
               </div>

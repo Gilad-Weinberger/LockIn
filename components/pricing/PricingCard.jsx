@@ -78,7 +78,7 @@ const PricingCard = ({ plan, isAnnual }) => {
             ))}
           </ul>
 
-          {plan.limitations.length > 0 && (
+          {plan.limitations?.length > 0 && (
             <ul className="space-y-2 sm:space-y-3 pt-3 sm:pt-4 border-t border-gray-100">
               {plan.limitations.map((limitation, limitIndex) => (
                 <li

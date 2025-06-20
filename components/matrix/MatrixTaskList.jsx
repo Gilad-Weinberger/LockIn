@@ -35,9 +35,9 @@ const MatrixTaskList = ({
       ))}
 
       {/* Drop zone after all tasks */}
-      {tasks.length > 0 && (
+      {tasks?.length > 0 && (
         <MatrixDropZone
-          index={tasks.length}
+          index={tasks?.length}
           quadrantType={quadrantType}
           onTaskDrop={onTaskDrop}
           isLast={true}

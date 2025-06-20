@@ -33,7 +33,11 @@ const WeekViewAllDaySection = ({
       </div>
       {weekDays.map((date, index) => {
         // Get all events (tasks + Google Calendar) for this date
-        const allEvents = getAllEventsForDate(tasks, googleCalendarEvents, date);
+        const allEvents = getAllEventsForDate(
+          tasks,
+          googleCalendarEvents,
+          date
+        );
         const allDayEvents = allEvents.filter((event) => isAllDayTask(event));
 
         return (
@@ -64,9 +68,9 @@ const WeekViewAllDaySection = ({
                   <span className="truncate">{event.title}</span>
                 </div>
               ))}
-              {allDayEvents.length > 2 && (
+              {allDayEvents?.length > 2 && (
                 <div className="text-xs text-gray-500 text-center">
-                  +{allDayEvents.length - 2}
+                  +{allDayEvents?.length - 2}
                 </div>
               )}
             </div>
