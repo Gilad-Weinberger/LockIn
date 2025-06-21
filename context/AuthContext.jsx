@@ -111,7 +111,11 @@ export const AuthProvider = ({ children }) => {
         const pathname = window.location.pathname;
 
         // Only redirect to signin if not already on an auth page or home
-        if (!pathname.startsWith("/auth/") && pathname !== "/") {
+        if (
+          !pathname.startsWith("/auth/") &&
+          !pathname.startsWith("/legal/") &&
+          pathname !== "/"
+        ) {
           router.push("/auth/signin");
         }
       }
