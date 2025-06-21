@@ -7,21 +7,18 @@ import { createUser, getUserData } from "@/lib/functions/userFunctions";
 
 // Components
 import AuthLayout from "../../../components/auth/AuthLayout";
-import AuthHeader from "../../../components/auth/AuthHeader";
 import AuthFormWrapper from "../../../components/auth/AuthFormWrapper";
 import AlertMessage from "../../../components/auth/AlertMessage";
 import FormSignUp from "../../../components/auth/FormSignUp";
 import FormDivider from "../../../components/auth/FormDivider";
 import ButtonGoogle from "../../../components/auth/ButtonGoogle";
 import AuthNavLink from "../../../components/auth/AuthNavLink";
-import { SignUpIcon } from "../../../components/auth/icons";
+import LegalNotice from "../../../components/auth/LegalNotice";
 
 const SignUpPage = () => {
   const [formData, setFormData] = useState({
-    name: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -42,13 +39,6 @@ const SignUpPage = () => {
     setError("");
     setSuccess("");
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setIsLoading(false);
-      return;
-    }
-
     // Validate password strength
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long");
@@ -58,8 +48,7 @@ const SignUpPage = () => {
 
     const { user, error } = await signUpWithEmail(
       formData.email,
-      formData.password,
-      formData.name
+      formData.password
     );
 
     if (error) {
@@ -99,12 +88,6 @@ const SignUpPage = () => {
 
   return (
     <AuthLayout>
-      <AuthHeader
-        icon={<SignUpIcon />}
-        title="Create Account"
-        subtitle="Sign up to get started with your account"
-      />
-
       <AuthFormWrapper>
         <AlertMessage message={error} type="error" />
         <AlertMessage message={success} type="success" />
@@ -125,24 +108,9 @@ const SignUpPage = () => {
           linkText="Sign in"
           href="/auth/signin"
         />
-
-        <div className="text-xs text-gray-500 text-center">
-          By proceeding, you agree to the{" "}
-          <a
-            href="/legal/tos"
-            className="text-blue-600 hover:text-blue-500 underline"
-          >
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a
-            href="/legal/privacy-policy"
-            className="text-blue-600 hover:text-blue-500 underline"
-          >
-            Privacy Policy
-          </a>
-        </div>
       </AuthFormWrapper>
+
+      <LegalNotice />
     </AuthLayout>
   );
 };

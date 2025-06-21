@@ -11,7 +11,6 @@ import { createUser, getUserData } from "@/lib/functions/userFunctions";
 
 // Components
 import AuthLayout from "../../../components/auth/AuthLayout";
-import AuthHeader from "../../../components/auth/AuthHeader";
 import AuthFormWrapper from "../../../components/auth/AuthFormWrapper";
 import AlertMessage from "../../../components/auth/AlertMessage";
 import FormSignIn from "../../../components/auth/FormSignIn";
@@ -19,7 +18,6 @@ import FormPasswordReset from "../../../components/auth/FormPasswordReset";
 import FormDivider from "../../../components/auth/FormDivider";
 import ButtonGoogle from "../../../components/auth/ButtonGoogle";
 import AuthNavLink from "../../../components/auth/AuthNavLink";
-import { SignInIcon } from "../../../components/auth/icons";
 
 const SignInPage = () => {
   const [formData, setFormData] = useState({
@@ -126,12 +124,6 @@ const SignInPage = () => {
 
   return (
     <AuthLayout>
-      <AuthHeader
-        icon={<SignInIcon />}
-        title="Welcome Back"
-        subtitle="Sign in to your account to continue"
-      />
-
       <AuthFormWrapper>
         <AlertMessage message={error} type="error" />
         <AlertMessage message={resetMessage} type="success" />
