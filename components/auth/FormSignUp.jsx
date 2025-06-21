@@ -36,7 +36,7 @@ const FormSignUp = ({ formData, onInputChange, onSubmit, isLoading }) => {
           value={formData.password}
           onChange={onInputChange}
           placeholder="Create a password"
-          helperText="Must be at least 6 characters long"
+          helperText="Must be at least 8 characters long"
           required
         />
 
