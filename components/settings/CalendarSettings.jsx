@@ -20,6 +20,29 @@ const CalendarSettings = () => {
   const [showPaywall, setShowPaywall] = useState(false);
   const [canUseFeature, setCanUseFeature] = useState(false);
 
+  // Format date as dd/mm/yyyy
+  const formatConnectionDate = (connectedAt) => {
+    try {
+      const formatDate = (date) => {
+        const day = date.getDate().toString().padStart(2, "0");
+        const month = (date.getMonth() + 1).toString().padStart(2, "0");
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+      };
+
+      // Handle Firestore timestamp objects
+      if (connectedAt.toDate) {
+        return formatDate(connectedAt.toDate());
+      }
+      // Handle regular date strings/objects
+      const date = new Date(connectedAt);
+      return isNaN(date.getTime()) ? "recently" : formatDate(date);
+    } catch (error) {
+      console.error("Error formatting connection date:", error);
+      return "recently";
+    }
+  };
+
   useEffect(() => {
     const loadSettings = async () => {
       if (user?.uid) {
@@ -203,8 +226,7 @@ const CalendarSettings = () => {
                     )}
                     {settings.connected && settings.connectedAt && (
                       <p className="text-xs text-gray-500">
-                        Connected{" "}
-                        {new Date(settings.connectedAt).toLocaleDateString()}
+                        Connected {formatConnectionDate(settings.connectedAt)}
                       </p>
                     )}
                   </div>
