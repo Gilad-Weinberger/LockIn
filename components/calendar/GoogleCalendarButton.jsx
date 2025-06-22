@@ -42,12 +42,8 @@ const GoogleCalendarButton = () => {
     // Handle connection completion from OAuth flow
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("google_calendar_success") === "true") {
-      const connectionData = sessionStorage.getItem(
-        "google_calendar_connection"
-      );
-      if (connectionData && user?.uid) {
-        handleConnectionComplete(JSON.parse(connectionData));
-        sessionStorage.removeItem("google_calendar_connection");
+      if (user?.uid) {
+        handleConnectionComplete();
         // Clean up URL
         window.history.replaceState(
           {},
@@ -58,19 +54,9 @@ const GoogleCalendarButton = () => {
     }
   }, [user]);
 
-  const handleConnectionComplete = async (connectionData) => {
+  const handleConnectionComplete = async () => {
     try {
       setIsConnecting(true);
-
-      const tokens = {
-        access_token: connectionData.accessToken,
-        refresh_token: connectionData.refreshToken,
-        expiry_date: connectionData.expiryDate,
-      };
-
-      const calendarInfo = {
-        summary: connectionData.calendarName,
-      };
 
       const response = await fetch("/api/calendar/google/connect", {
         method: "POST",
@@ -79,18 +65,19 @@ const GoogleCalendarButton = () => {
         },
         body: JSON.stringify({
           userId: user.uid,
-          tokens,
-          calendarInfo,
         }),
       });
 
-      if (response.ok) {
+      const result = await response.json();
+
+      if (response.ok && result.success) {
         setIsConnected(true);
-        // Show success message
-        alert("Google Calendar connected successfully!");
+        alert(result.message || "Google Calendar connected successfully!");
       } else {
-        console.error("Failed to save Google Calendar connection");
-        alert("Failed to connect Google Calendar. Please try again.");
+        console.error("Failed to connect Google Calendar:", result.error);
+        alert(
+          result.error || "Failed to connect Google Calendar. Please try again."
+        );
       }
     } catch (error) {
       console.error("Error completing Google Calendar connection:", error);

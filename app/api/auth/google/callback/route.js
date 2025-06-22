@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import GoogleCalendarService from "@/lib/services/google-calendar";
 import { connectGoogleCalendar } from "@/lib/functions/googleCalendarFunctions";
 
@@ -31,26 +32,28 @@ export async function GET(request) {
     googleCalendarService.setCredentials(tokens);
     const calendarInfo = await googleCalendarService.getCalendarInfo();
 
-    // Get current user from session/token
-    // Since we're in an API route, we need to verify the user
-    // For now, we'll redirect with the tokens and handle on client side
-    const redirectUrl = new URL("/api/auth/google/complete", request.url);
-    redirectUrl.searchParams.set("access_token", tokens.access_token);
-    if (tokens.refresh_token) {
-      redirectUrl.searchParams.set("refresh_token", tokens.refresh_token);
-    }
-    if (tokens.expiry_date) {
-      redirectUrl.searchParams.set(
-        "expiry_date",
-        tokens.expiry_date.toString()
-      );
-    }
-    redirectUrl.searchParams.set(
-      "calendar_name",
-      calendarInfo.summary || "Primary Calendar"
-    );
+    // Store tokens in secure HTTP-only cookies temporarily (10 minutes)
+    const cookieStore = await cookies();
+    const connectionData = {
+      accessToken: tokens.access_token,
+      refreshToken: tokens.refresh_token || null,
+      expiryDate: tokens.expiry_date || null,
+      calendarName: calendarInfo?.summary || "Primary Calendar",
+    };
 
-    return NextResponse.redirect(redirectUrl);
+    // Set secure HTTP-only cookie that expires in 10 minutes
+    cookieStore.set("google_calendar_tokens", JSON.stringify(connectionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 600, // 10 minutes
+      path: "/",
+    });
+
+    // Redirect to calendar page with success flag
+    return NextResponse.redirect(
+      new URL("/calendar?google_calendar_success=true", request.url)
+    );
   } catch (error) {
     console.error("Error in Google OAuth callback:", error);
     return NextResponse.redirect(

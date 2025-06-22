@@ -1,6 +1,5 @@
-import { useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { connectGoogleCalendar } from '@/lib/functions/googleCalendarFunctions';
+import { useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 export const useGoogleCalendarConnection = () => {
   const { user } = useAuth();
@@ -8,43 +7,46 @@ export const useGoogleCalendarConnection = () => {
   useEffect(() => {
     // Handle connection completion from OAuth flow
     const urlParams = new URLSearchParams(window.location.search);
-    
+
     if (urlParams.get("google_calendar_success") === "true") {
-      const connectionData = sessionStorage.getItem("google_calendar_connection");
-      
-      if (connectionData && user?.uid) {
-        handleConnectionComplete(JSON.parse(connectionData));
-        sessionStorage.removeItem("google_calendar_connection");
+      if (user?.uid) {
+        handleConnectionComplete();
         // Clean up URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname
+        );
+      }
+    }
+
+    async function handleConnectionComplete() {
+      try {
+        const response = await fetch("/api/calendar/google/connect", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.uid,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          alert(result.message || "Google Calendar connected successfully!");
+        } else {
+          console.error("Failed to connect Google Calendar:", result.error);
+          alert(
+            result.error ||
+              "Failed to connect Google Calendar. Please try again."
+          );
+        }
+      } catch (error) {
+        console.error("Error completing Google Calendar connection:", error);
+        alert("Failed to connect Google Calendar. Please try again.");
       }
     }
   }, [user]);
-
-  const handleConnectionComplete = async (connectionData) => {
-    try {
-      const tokens = {
-        access_token: connectionData.accessToken,
-        refresh_token: connectionData.refreshToken,
-        expiry_date: connectionData.expiryDate,
-      };
-
-      const calendarInfo = {
-        summary: connectionData.calendarName,
-      };
-
-      // Call the function directly instead of through API route
-      const result = await connectGoogleCalendar(user.uid, tokens, calendarInfo);
-
-      if (result.success) {
-        alert("Google Calendar connected successfully!");
-      } else {
-        console.error("Failed to save Google Calendar connection");
-        alert("Failed to connect Google Calendar. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error completing Google Calendar connection:", error);
-      alert("Failed to connect Google Calendar. Please try again.");
-    }
-  };
-}; 
+};
