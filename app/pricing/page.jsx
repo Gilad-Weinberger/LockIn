@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../../components/ui/Navbar";
 import PricingHeader from "../../components/pricing/PricingHeader";
 import PricingGrid from "../../components/pricing/PricingGrid";
