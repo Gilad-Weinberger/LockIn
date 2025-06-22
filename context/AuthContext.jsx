@@ -95,13 +95,21 @@ export const AuthProvider = ({ children }) => {
           return;
         }
         console.log("userData", userData);
-        const hasAccess = await hasPaymentAccess(userData.id);
-        if (hasAccess) {
-          router.push("/tasks");
-        } else {
-          const hasShownPricingResult = await hasShownPricing(userData.id);
-          if (!hasShownPricingResult) {
-            router.push("/pricing");
+
+        // Get current pathname
+        const pathname = window.location.pathname;
+
+        // Only redirect from the home page - let all other pages handle naturally
+        // This allows 404 pages to display properly while still redirecting from home
+        if (pathname === "/") {
+          const hasAccess = await hasPaymentAccess(userData.id);
+          if (hasAccess) {
+            router.push("/tasks");
+          } else {
+            const hasShownPricingResult = await hasShownPricing(userData.id);
+            if (!hasShownPricingResult) {
+              router.push("/pricing");
+            }
           }
         }
       } else {
