@@ -2,103 +2,34 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useGoogleCalendarIntegration } from "@/hooks/useGoogleCalendarIntegration";
+import { getEventsForCalendarDisplay } from "@/lib/utils/google-calendar-integration";
 import CalendarTaskForm from "./CalendarTaskForm";
 import CalendarModalHeader from "./eventModal/CalendarModalHeader";
 import CalendarModalFooter from "./eventModal/CalendarModalFooter";
 import CalendarTaskList from "./eventModal/CalendarTaskList";
 
-const CalendarEventModal = ({
-  isOpen,
-  onClose,
-  selectedDate,
-  tasks,
-  googleCalendarEvents = [],
-  onRefreshGoogleCalendar,
-  onRefreshGoogleCalendarSettings,
-}) => {
+const CalendarEventModal = ({ isOpen, onClose, selectedDate, tasks }) => {
   const [editingTask, setEditingTask] = useState(null);
   const { userData } = useAuth();
   const categories = userData?.categories || [];
 
+  // Use our new Google Calendar integration
+  const { googleEvents, settings } = useGoogleCalendarIntegration(
+    tasks,
+    selectedDate,
+    "month"
+  );
+
   const dayEvents = useMemo(() => {
     if (!selectedDate) return [];
 
-    const events = [];
-
-    // Add regular tasks
-    if (tasks && tasks.length > 0) {
-      const dayTasks = tasks.filter((task) => {
-        // For scheduled tasks, check if the date falls within startDate and endDate range
-        if (task.startDate && task.endDate) {
-          const startDate = task.startDate.toDate
-            ? task.startDate.toDate()
-            : new Date(task.startDate);
-          const endDate = task.endDate.toDate
-            ? task.endDate.toDate()
-            : new Date(task.endDate);
-
-          // Check if the selected date falls within the task's time range
-          const selectedDateStart = new Date(selectedDate);
-          selectedDateStart.setHours(0, 0, 0, 0);
-          const selectedDateEnd = new Date(selectedDate);
-          selectedDateEnd.setHours(23, 59, 59, 999);
-
-          return startDate <= selectedDateEnd && endDate >= selectedDateStart;
-        }
-
-        // Fallback to taskDate for backward compatibility (now handles full timestamps)
-        if (!task.taskDate) return false;
-        const taskDate = new Date(task.taskDate);
-        return (
-          taskDate.getDate() === selectedDate.getDate() &&
-          taskDate.getMonth() === selectedDate.getMonth() &&
-          taskDate.getFullYear() === selectedDate.getFullYear()
-        );
-      });
-
-      events.push(...dayTasks.map((task) => ({ ...task, type: "task" })));
-
-      // Get Google Calendar event IDs that are already synced as tasks
-      const syncedGoogleEventIds = new Set(
-        dayTasks
-          .filter((task) => task.googleCalendarEventId)
-          .map((task) => task.googleCalendarEventId)
-      );
-
-      // Add Google Calendar events (but exclude ones that are already synced as tasks)
-      if (googleCalendarEvents && googleCalendarEvents.length > 0) {
-        const dayGoogleEvents = googleCalendarEvents.filter((event) => {
-          if (!event.start) return false;
-
-          const eventStart = new Date(event.start);
-          const eventEnd = event.end ? new Date(event.end) : eventStart;
-
-          // Check if the event occurs on this date
-          const selectedDateStart = new Date(selectedDate);
-          selectedDateStart.setHours(0, 0, 0, 0);
-          const selectedDateEnd = new Date(selectedDate);
-          selectedDateEnd.setHours(23, 59, 59, 999);
-
-          return eventStart <= selectedDateEnd && eventEnd >= selectedDateStart;
-        });
-
-        // Filter out Google Calendar events that are already synced as tasks
-        const uniqueGoogleEvents = dayGoogleEvents.filter(
-          (event) => !syncedGoogleEventIds.has(event.id)
-        );
-
-        events.push(
-          ...uniqueGoogleEvents.map((event) => ({
-            ...event,
-            type: "google_calendar",
-            id: event.id || `google-${Date.now()}-${Math.random()}`,
-            title: event.title || event.summary || "Google Calendar Event",
-            category: "Google Calendar",
-            isDone: false,
-          }))
-        );
-      }
-    }
+    const events = getEventsForCalendarDisplay(
+      tasks,
+      googleEvents,
+      selectedDate,
+      settings.showGoogleEvents
+    );
 
     // Sort events by start time
     return events.sort((a, b) => {
@@ -131,7 +62,7 @@ const CalendarEventModal = ({
 
       return aStart - bStart;
     });
-  }, [selectedDate, tasks, googleCalendarEvents]);
+  }, [selectedDate, tasks, googleEvents, settings.showGoogleEvents]);
 
   const handleEditTask = (task) => {
     // Allow editing both regular tasks and Google Calendar events
@@ -178,8 +109,6 @@ const CalendarEventModal = ({
         open={!!editingTask}
         onClose={() => setEditingTask(null)}
         task={editingTask}
-        onRefreshGoogleCalendar={onRefreshGoogleCalendar}
-        onRefreshGoogleCalendarSettings={onRefreshGoogleCalendarSettings}
       />
     </div>
   );

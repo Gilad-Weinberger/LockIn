@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useGoogleCalendarIntegration } from "@/hooks/useGoogleCalendarIntegration";
 import CalendarTaskForm from "./CalendarTaskForm";
 import {
   WeekViewHeader,
@@ -12,18 +13,30 @@ import {
   calculateAllDayHeight,
 } from "./weekView";
 
-const CalendarWeekView = ({ currentDate, tasks, googleCalendarEvents = [], onDateClick }) => {
+const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
   const [editingTask, setEditingTask] = useState(null);
   const { userData } = useAuth();
   const categories = userData?.categories || [];
+
+  // Use our new Google Calendar integration
+  const { googleEvents, settings } = useGoogleCalendarIntegration(
+    tasks,
+    currentDate,
+    "week"
+  );
 
   // Generate week data
   const weekData = useMemo(() => generateWeekData(currentDate), [currentDate]);
 
   // Calculate dynamic all-day section height
   const allDayHeight = useMemo(
-    () => calculateAllDayHeight(weekData.days, tasks, googleCalendarEvents),
-    [weekData.days, tasks, googleCalendarEvents]
+    () =>
+      calculateAllDayHeight(
+        weekData.days,
+        tasks,
+        settings.showGoogleEvents ? googleEvents : []
+      ),
+    [weekData.days, tasks, googleEvents, settings.showGoogleEvents]
   );
 
   const handleTaskClick = (task) => {
@@ -39,7 +52,7 @@ const CalendarWeekView = ({ currentDate, tasks, googleCalendarEvents = [], onDat
       <WeekViewAllDaySection
         weekDays={weekData.days}
         tasks={tasks}
-        googleCalendarEvents={googleCalendarEvents}
+        googleCalendarEvents={settings.showGoogleEvents ? googleEvents : []}
         categories={categories}
         allDayHeight={allDayHeight}
         onTaskClick={handleTaskClick}
@@ -69,7 +82,7 @@ const CalendarWeekView = ({ currentDate, tasks, googleCalendarEvents = [], onDat
           <WeekViewTaskEvents
             weekDays={weekData.days}
             tasks={tasks}
-            googleCalendarEvents={googleCalendarEvents}
+            googleCalendarEvents={settings.showGoogleEvents ? googleEvents : []}
             categories={categories}
             onTaskClick={handleTaskClick}
           />

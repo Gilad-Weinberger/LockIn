@@ -5,7 +5,7 @@ import {
   updateNullPriorityTasks,
 } from "@/lib/functions/taskFunctions";
 
-export const useTaskFormSubmit = (onRefreshGoogleCalendar) => {
+export const useTaskFormSubmit = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState("");
   const { userData } = useAuth();
@@ -74,10 +74,7 @@ export const useTaskFormSubmit = (onRefreshGoogleCalendar) => {
           );
         }
 
-        // Refresh Google Calendar events after successful update
-        if (onRefreshGoogleCalendar) {
-          onRefreshGoogleCalendar();
-        }
+        // Google Calendar events will be refreshed automatically by our new integration
       } else {
         // Handle regular task update
         const startDateTime = new Date(`${startDate}T${startTime || "00:00"}`);
