@@ -48,9 +48,8 @@ firebase-firestore-rules.txt
 # todo list
 tasks.todo
 
-# instructions
-git-commands.txt
-mongodb_realtime.txt
+# txt files in root directory only
+/*.txt
 
 # videos
 *.mp4
