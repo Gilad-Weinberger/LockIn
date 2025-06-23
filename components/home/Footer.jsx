@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { footerLinks } from "@/lib/homepage-data";
+import Logo from "@/components/ui/Logo";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -41,11 +42,12 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 sm:gap-8">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <div className="flex items-center space-x-2 mb-4 sm:mb-6">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">L</span>
-              </div>
-              <span className="text-lg sm:text-xl font-bold">LockIn</span>
+            <div className="mb-4 sm:mb-6">
+              <Logo
+                href="/"
+                textSize="text-lg sm:text-xl"
+                textColor="text-white"
+              />
             </div>
             <p className="text-gray-300 mb-4 sm:mb-6 leading-relaxed text-sm sm:text-base">
               Transform your productivity with AI-powered task scheduling. Turn

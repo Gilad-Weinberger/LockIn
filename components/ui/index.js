@@ -7,3 +7,4 @@ export { default as MobileMenu } from "./navbar/MobileMenu";
 
 // Other UI components
 export { default as DropdownMenu } from "./DropdownMenu";
+export { default as Logo } from "./Logo";

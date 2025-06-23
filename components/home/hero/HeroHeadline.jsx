@@ -15,7 +15,7 @@ const HeroHeadline = ({ isVisible }) => {
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-600">
           Booked Calendar
         </span>{" "}
-        in 30 seconds.
+        in 10 seconds.
       </h1>
 
       <p
