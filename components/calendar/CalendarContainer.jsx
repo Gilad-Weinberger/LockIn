@@ -24,6 +24,7 @@ const CalendarContainer = forwardRef(
       onToday,
       onSchedule,
       onRefreshGoogleCalendar,
+      onRefreshGoogleCalendarSettings,
     },
     ref
   ) => {
@@ -107,6 +108,7 @@ const CalendarContainer = forwardRef(
           tasks={scheduledTasks}
           googleCalendarEvents={googleCalendarEvents}
           onRefreshGoogleCalendar={onRefreshGoogleCalendar}
+          onRefreshGoogleCalendarSettings={onRefreshGoogleCalendarSettings}
         />
       </div>
     );

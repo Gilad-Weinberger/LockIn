@@ -47,6 +47,7 @@ const CalendarPage = () => {
     isLoading: isLoadingEvents,
     error: eventsError,
     refreshEvents,
+    refreshSettings,
   } = useGoogleCalendarEvents(navigation.currentDate, view);
 
   // Scheduler handler
@@ -162,6 +163,7 @@ const CalendarPage = () => {
         onToday={navigation.handleToday}
         onSchedule={scheduler.handleManualSchedule}
         onRefreshGoogleCalendar={refreshEvents}
+        onRefreshGoogleCalendarSettings={refreshSettings}
       />
     </PageLayout>
   );

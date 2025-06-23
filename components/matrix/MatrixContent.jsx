@@ -21,14 +21,9 @@ export const MatrixContent = ({
   onRetry,
   onRePrioritize,
 }) => {
-  // Loading state
-  if (isLoading || isPrioritizing) {
-    return (
-      <MatrixLoadingState
-        isLoading={isLoading}
-        isPrioritizing={isPrioritizing}
-      />
-    );
+  // Loading state - only show full page loading for initial task loading, not prioritizing
+  if (isLoading) {
+    return <MatrixLoadingState isLoading={isLoading} isPrioritizing={false} />;
   }
 
   // Error state
@@ -41,7 +36,7 @@ export const MatrixContent = ({
     return <MatrixEmptyState />;
   }
 
-  // Success state - render the matrix
+  // Success state - render the matrix (show matrix even when prioritizing, button will show loading)
   return (
     <div className="h-full bg-gray-100 flex items-center justify-center p-6 relative overflow-hidden">
       {/* Navigation buttons */}

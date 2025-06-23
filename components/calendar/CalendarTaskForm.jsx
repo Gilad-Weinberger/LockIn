@@ -11,14 +11,21 @@ import {
   useTaskFormSubmit,
 } from "./taskForm";
 
-const CalendarTaskForm = ({ open, onClose, task, onRefreshGoogleCalendar }) => {
+const CalendarTaskForm = ({
+  open,
+  onClose,
+  task,
+  onRefreshGoogleCalendar,
+  onRefreshGoogleCalendarSettings,
+}) => {
   const { userData } = useAuth();
   const categories = userData?.categories || [];
 
   // Use custom hooks for state management and submission
   const formData = useTaskFormData(task, open);
   const { isLoading, hasError, handleSubmit } = useTaskFormSubmit(
-    onRefreshGoogleCalendar
+    onRefreshGoogleCalendar,
+    onRefreshGoogleCalendarSettings
   );
 
   // Don't render if modal is not open

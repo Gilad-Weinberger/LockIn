@@ -8,6 +8,7 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [canUseGoogleCalendar, setCanUseGoogleCalendar] = useState(false);
+  const [showGoogleEvents, setShowGoogleEvents] = useState(false);
 
   const getDateRange = useCallback(() => {
     if (!currentDate) return null;
@@ -49,24 +50,41 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
     return { timeMin, timeMax };
   }, [currentDate, view]);
 
-  // Check subscription access
+  // Check subscription access and user settings
   useEffect(() => {
-    const checkAccess = async () => {
+    const checkAccessAndSettings = async () => {
       if (!user?.uid) {
         setCanUseGoogleCalendar(false);
+        setShowGoogleEvents(false);
         return;
       }
 
       try {
         const hasAccess = await canAccessFeature(user.uid, "google_calendar");
         setCanUseGoogleCalendar(hasAccess);
+
+        if (hasAccess) {
+          // Also check user's calendar settings
+          const response = await fetch(
+            `/api/calendar/google/settings?userId=${user.uid}`
+          );
+          if (response.ok) {
+            const settings = await response.json();
+            setShowGoogleEvents(settings.showGoogleEvents !== false);
+          } else {
+            setShowGoogleEvents(false);
+          }
+        } else {
+          setShowGoogleEvents(false);
+        }
       } catch (error) {
         console.error("Error checking Google Calendar access:", error);
         setCanUseGoogleCalendar(false);
+        setShowGoogleEvents(false);
       }
     };
 
-    checkAccess();
+    checkAccessAndSettings();
   }, [user?.uid]);
 
   const fetchEvents = useCallback(async () => {
@@ -75,8 +93,8 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
       return;
     }
 
-    // Don't attempt to fetch events if user doesn't have access
-    if (!canUseGoogleCalendar) {
+    // Don't attempt to fetch events if user doesn't have access or doesn't want to show Google events
+    if (!canUseGoogleCalendar || !showGoogleEvents) {
       setEvents([]);
       return;
     }
@@ -119,7 +137,7 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
     } finally {
       setIsLoading(false);
     }
-  }, [user?.uid, getDateRange, canUseGoogleCalendar]);
+  }, [user?.uid, getDateRange, canUseGoogleCalendar, showGoogleEvents]);
 
   // Fetch events when dependencies change
   useEffect(() => {
@@ -131,10 +149,40 @@ export const useGoogleCalendarEvents = (currentDate, view) => {
     fetchEvents();
   }, [fetchEvents]);
 
+  // Refresh settings function for when settings change
+  const refreshSettings = useCallback(async () => {
+    if (!user?.uid) return;
+
+    try {
+      const hasAccess = await canAccessFeature(user.uid, "google_calendar");
+      setCanUseGoogleCalendar(hasAccess);
+
+      if (hasAccess) {
+        // Also check user's calendar settings
+        const response = await fetch(
+          `/api/calendar/google/settings?userId=${user.uid}`
+        );
+        if (response.ok) {
+          const settings = await response.json();
+          setShowGoogleEvents(settings.showGoogleEvents !== false);
+        } else {
+          setShowGoogleEvents(false);
+        }
+      } else {
+        setShowGoogleEvents(false);
+      }
+    } catch (error) {
+      console.error("Error refreshing Google Calendar settings:", error);
+      setCanUseGoogleCalendar(false);
+      setShowGoogleEvents(false);
+    }
+  }, [user?.uid]);
+
   return {
     events,
     isLoading,
     error,
     refreshEvents,
+    refreshSettings,
   };
 };

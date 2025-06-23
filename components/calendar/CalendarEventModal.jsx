@@ -14,6 +14,7 @@ const CalendarEventModal = ({
   tasks,
   googleCalendarEvents = [],
   onRefreshGoogleCalendar,
+  onRefreshGoogleCalendarSettings,
 }) => {
   const [editingTask, setEditingTask] = useState(null);
   const { userData } = useAuth();
@@ -171,6 +172,7 @@ const CalendarEventModal = ({
         onClose={() => setEditingTask(null)}
         task={editingTask}
         onRefreshGoogleCalendar={onRefreshGoogleCalendar}
+        onRefreshGoogleCalendarSettings={onRefreshGoogleCalendarSettings}
       />
     </div>
   );

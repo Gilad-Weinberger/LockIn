@@ -30,6 +30,8 @@ const Footer = () => {
                   href={social.href}
                   className="text-gray-400 hover:text-white transition-colors duration-200"
                   aria-label={social.name}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   {social.icon}
                 </Link>

@@ -1,18 +1,22 @@
-import { NextResponse } from 'next/server';
-import GoogleCalendarService from '@/lib/services/google-calendar';
-import { getUserGoogleCalendarData, updateGoogleCalendarTokens } from '@/lib/functions/googleCalendarFunctions';
-import { canAccessFeature } from '@/lib/utils/subscription-utils';
+import { NextResponse } from "next/server";
+import GoogleCalendarService from "@/lib/services/google-calendar";
+import {
+  getUserGoogleCalendarData,
+  updateGoogleCalendarTokens,
+  getGoogleCalendarSettings,
+} from "@/lib/functions/googleCalendarFunctions";
+import { canAccessFeature } from "@/lib/utils/subscription-utils";
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const timeMin = searchParams.get('timeMin');
-    const timeMax = searchParams.get('timeMax');
+    const userId = searchParams.get("userId");
+    const timeMin = searchParams.get("timeMin");
+    const timeMax = searchParams.get("timeMax");
 
     if (!userId) {
       return NextResponse.json(
-        { error: 'User ID is required' },
+        { error: "User ID is required" },
         { status: 400 }
       );
     }
@@ -30,14 +34,19 @@ export async function GET(request) {
       );
     }
 
+    // Get user's Google Calendar settings
+    const userSettings = await getGoogleCalendarSettings(userId);
+
+    // Check if user wants to show Google Calendar events
+    if (!userSettings.showGoogleEvents) {
+      return NextResponse.json({ events: [] }, { status: 200 });
+    }
+
     // Get user's Google Calendar data
     const googleCalendarData = await getUserGoogleCalendarData(userId);
 
     if (!googleCalendarData.connected) {
-      return NextResponse.json(
-        { events: [] },
-        { status: 200 }
-      );
+      return NextResponse.json({ events: [] }, { status: 200 });
     }
 
     // Check if tokens need refresh
@@ -46,25 +55,27 @@ export async function GET(request) {
       // Token expired, try to refresh
       if (!googleCalendarData.refreshToken) {
         return NextResponse.json(
-          { error: 'Access token expired and no refresh token available' },
+          { error: "Access token expired and no refresh token available" },
           { status: 401 }
         );
       }
 
       try {
         const googleCalendarService = new GoogleCalendarService();
-        const newTokens = await googleCalendarService.refreshToken(googleCalendarData.refreshToken);
-        
+        const newTokens = await googleCalendarService.refreshToken(
+          googleCalendarData.refreshToken
+        );
+
         // Update tokens in database
         await updateGoogleCalendarTokens(userId, newTokens);
-        
+
         // Use new tokens
         googleCalendarData.accessToken = newTokens.access_token;
         googleCalendarData.expiryDate = newTokens.expiry_date;
       } catch (refreshError) {
-        console.error('Failed to refresh tokens:', refreshError);
+        console.error("Failed to refresh tokens:", refreshError);
         return NextResponse.json(
-          { error: 'Failed to refresh access token' },
+          { error: "Failed to refresh access token" },
           { status: 401 }
         );
       }
@@ -79,37 +90,55 @@ export async function GET(request) {
     });
 
     // Set default time range if not provided (current month)
-    const defaultTimeMin = timeMin || new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
-    const defaultTimeMax = timeMax || new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0, 23, 59, 59).toISOString();
+    const defaultTimeMin =
+      timeMin ||
+      new Date(
+        new Date().getFullYear(),
+        new Date().getMonth(),
+        1
+      ).toISOString();
+    const defaultTimeMax =
+      timeMax ||
+      new Date(
+        new Date().getFullYear(),
+        new Date().getMonth() + 1,
+        0,
+        23,
+        59,
+        59
+      ).toISOString();
 
     // Fetch events from Google Calendar
-    const events = await googleCalendarService.getEvents(defaultTimeMin, defaultTimeMax);
+    const events = await googleCalendarService.getEvents(
+      defaultTimeMin,
+      defaultTimeMax
+    );
 
     // Transform events to a consistent format
-    const transformedEvents = events.map(event => ({
+    const transformedEvents = events.map((event) => ({
       id: event.id,
-      title: event.summary || 'Untitled Event',
-      description: event.description || '',
+      title: event.summary || "Untitled Event",
+      description: event.description || "",
       start: event.start?.dateTime || event.start?.date,
       end: event.end?.dateTime || event.end?.date,
       allDay: !event.start?.dateTime, // If no time, it's an all-day event
-      location: event.location || '',
-      source: 'google_calendar',
+      location: event.location || "",
+      source: "google_calendar",
       htmlLink: event.htmlLink,
       status: event.status,
       creator: event.creator,
       organizer: event.organizer,
     }));
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       events: transformedEvents,
-      success: true 
+      success: true,
     });
   } catch (error) {
-    console.error('Error fetching Google Calendar events:', error);
+    console.error("Error fetching Google Calendar events:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch Google Calendar events' },
+      { error: "Failed to fetch Google Calendar events" },
       { status: 500 }
     );
   }
-} 
+}
