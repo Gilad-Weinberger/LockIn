@@ -51,3 +51,6 @@ tasks.todo
 # instructions
 git-commands.txt
 mongodb_realtime.txt
+
+# videos
+*.mp4

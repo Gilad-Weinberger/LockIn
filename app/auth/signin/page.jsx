@@ -18,6 +18,7 @@ import FormPasswordReset from "../../../components/auth/FormPasswordReset";
 import FormDivider from "../../../components/auth/FormDivider";
 import ButtonGoogle from "../../../components/auth/ButtonGoogle";
 import AuthNavLink from "../../../components/auth/AuthNavLink";
+import LegalNotice from "../../../components/auth/LegalNotice";
 
 const SignInPage = () => {
   const [formData, setFormData] = useState({
@@ -158,6 +159,8 @@ const SignInPage = () => {
           href="/auth/signup"
         />
       </AuthFormWrapper>
+
+      <LegalNotice />
     </AuthLayout>
   );
 };
