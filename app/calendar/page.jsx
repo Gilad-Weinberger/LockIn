@@ -36,6 +36,7 @@ const CalendarPage = () => {
   // Use our new Google Calendar integration with auto-sync
   const {
     googleEvents,
+    isLoading: googleCalendarIsLoading,
     isSyncing: isSyncingTasks,
     settings,
     syncAllTasks,
@@ -151,6 +152,7 @@ const CalendarPage = () => {
         scheduledTasks={scheduledTasks}
         isScheduling={scheduler.isScheduling}
         scheduleError={scheduleError}
+        googleCalendarIsLoading={googleCalendarIsLoading}
         onViewChange={setView}
         onPrevious={handlePrevious}
         onNext={handleNext}

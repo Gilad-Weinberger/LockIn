@@ -137,7 +137,12 @@ export async function GET(request) {
   } catch (error) {
     console.error("Error fetching Google Calendar events:", error);
     return NextResponse.json(
-      { error: "Failed to fetch Google Calendar events" },
+      {
+        error: "Failed to fetch Google Calendar events",
+        details:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+        code: error.code || "UNKNOWN_ERROR",
+      },
       { status: 500 }
     );
   }

@@ -6,7 +6,7 @@ import { canAccessFeature } from "@/lib/utils/subscription-utils";
 import ProPaywall from "@/components/settings/ProPaywall";
 import { useRouter } from "next/navigation";
 
-const GoogleCalendarButton = () => {
+const GoogleCalendarButton = ({ isLoading = false }) => {
   const { user } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -164,9 +164,15 @@ const GoogleCalendarButton = () => {
           !canUseFeature ? "Upgrade to Pro to connect Google Calendar" : ""
         }
       >
-        <GoogleCalendarIcon connected={isConnected} />
+        {isLoading && isConnected ? (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
+        ) : (
+          <GoogleCalendarIcon connected={isConnected} />
+        )}
         <span>
-          {isConnecting
+          {isLoading && isConnected
+            ? "Loading events..."
+            : isConnecting
             ? "Connecting..."
             : isConnected
             ? "Connected"

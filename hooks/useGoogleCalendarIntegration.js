@@ -30,23 +30,39 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
   /**
    * Fetch user's Google Calendar settings
    */
-  const fetchSettings = useCallback(async () => {
-    if (!user?.uid) return;
+  const fetchSettings = useCallback(
+    async (retryCount = 0) => {
+      if (!user?.uid) return;
 
-    try {
-      const response = await fetch(
-        `/api/calendar/google/settings?userId=${user.uid}`
-      );
-      if (response.ok) {
-        const data = await response.json();
-        setSettings(data);
-        return data;
+      try {
+        const response = await fetch(
+          `/api/calendar/google/settings?userId=${user.uid}`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setSettings(data);
+          return data;
+        } else if (retryCount < 2) {
+          // Retry up to 2 times with exponential backoff
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+          );
+          return fetchSettings(retryCount + 1);
+        }
+      } catch (error) {
+        console.error("Error fetching Google Calendar settings:", error);
+        if (retryCount < 2) {
+          // Retry up to 2 times with exponential backoff
+          await new Promise((resolve) =>
+            setTimeout(resolve, Math.pow(2, retryCount) * 1000)
+          );
+          return fetchSettings(retryCount + 1);
+        }
       }
-    } catch (error) {
-      console.error("Error fetching Google Calendar settings:", error);
-    }
-    return null;
-  }, [user?.uid]);
+      return null;
+    },
+    [user?.uid]
+  );
 
   /**
    * Update Google Calendar settings
@@ -139,10 +155,17 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
     setIsLoading(true);
     setError(null);
 
+    // Create AbortController for request cancellation
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 30000); // 30 second timeout
+
     try {
       const response = await fetch(
-        `/api/calendar/google/events?userId=${user.uid}&timeMin=${dateRange.timeMin}&timeMax=${dateRange.timeMax}`
+        `/api/calendar/google/events?userId=${user.uid}&timeMin=${dateRange.timeMin}&timeMax=${dateRange.timeMax}`,
+        { signal: abortController.signal }
       );
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
@@ -155,6 +178,13 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
         throw new Error("Failed to fetch Google Calendar events");
       }
     } catch (err) {
+      clearTimeout(timeoutId);
+
+      if (err.name === "AbortError") {
+        console.log("Google Calendar events fetch was cancelled");
+        return;
+      }
+
       console.error("Error fetching Google Calendar events:", err);
       setError(err.message);
       setGoogleEvents([]);
@@ -396,7 +426,22 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
   // Fetch Google events when settings or date range changes
   useEffect(() => {
     fetchGoogleEvents();
-  }, [fetchGoogleEvents]);
+  }, [
+    fetchGoogleEvents,
+    user?.uid,
+    settings.connected,
+    settings.showGoogleEvents,
+    currentDate,
+    view,
+  ]);
+
+  // Cleanup refs on unmount
+  useEffect(() => {
+    return () => {
+      lastFetchRef.current = null;
+      lastSyncRef.current = null;
+    };
+  }, []);
 
   // =====================================
   // RETURN API

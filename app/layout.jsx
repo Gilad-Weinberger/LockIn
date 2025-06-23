@@ -14,7 +14,7 @@ export const metadata = {
   description:
     "LockIn helps you stay focused and productive with advanced task management, calendar integration, and priority matrices.",
   icons: {
-    icon: "/icon.svg",
+    icon: "/logo.svg",
   },
 };
 

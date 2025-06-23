@@ -3,12 +3,23 @@
 import { getAllEventsForDate, isAllDayTask, TIME_SLOTS } from "./WeekViewUtils";
 import WeekViewTaskEvent from "./WeekViewTaskEvent";
 
-const WeekViewTaskEvents = ({ weekDays, tasks, googleCalendarEvents = [], categories, onTaskClick }) => {
+const WeekViewTaskEvents = ({
+  weekDays,
+  tasks,
+  googleCalendarEvents = [],
+  categories,
+  onTaskClick,
+  error = null,
+}) => {
   return (
     <>
       {weekDays.map((date, dayIndex) => {
         // Get all events (tasks + Google Calendar) for this date
-        const allEvents = getAllEventsForDate(tasks, googleCalendarEvents, date);
+        const allEvents = getAllEventsForDate(
+          tasks,
+          googleCalendarEvents,
+          date
+        );
         const timedEvents = allEvents.filter((event) => !isAllDayTask(event));
 
         // Calculate the column width and position

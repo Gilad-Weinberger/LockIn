@@ -12,6 +12,7 @@ const CalendarHeader = ({
   onToday,
   onSchedule,
   isScheduling = false,
+  googleCalendarIsLoading = false,
 }) => {
   const formatHeaderDate = () => {
     const options = { year: "numeric", month: "long" };
@@ -127,7 +128,7 @@ const CalendarHeader = ({
           </div>
 
           {/* Google Calendar button */}
-          <GoogleCalendarButton />
+          <GoogleCalendarButton isLoading={googleCalendarIsLoading} />
 
           {/* Schedule button */}
           {onSchedule && (

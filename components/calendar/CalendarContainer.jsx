@@ -17,6 +17,7 @@ const CalendarContainer = forwardRef(
       scheduledTasks,
       isScheduling,
       scheduleError,
+      googleCalendarIsLoading = false,
       onViewChange,
       onPrevious,
       onNext,
@@ -74,6 +75,7 @@ const CalendarContainer = forwardRef(
                 onToday={onToday}
                 onSchedule={onSchedule}
                 isScheduling={isScheduling}
+                googleCalendarIsLoading={googleCalendarIsLoading}
               />
 
               {/* Calendar view without gap */}

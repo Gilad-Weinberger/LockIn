@@ -99,19 +99,40 @@ export const getTasksForDate = (tasks, date) => {
 export const getGoogleCalendarEventsForDate = (googleCalendarEvents, date) => {
   if (!googleCalendarEvents || googleCalendarEvents.length === 0) return [];
 
+  const targetDate = new Date(date);
+
   return googleCalendarEvents.filter((event) => {
     if (!event.start) return false;
 
-    const eventStart = new Date(event.start);
-    const eventEnd = event.end ? new Date(event.end) : eventStart;
+    let eventDate;
 
-    // Check if the event occurs on this date
-    const currentDateStart = new Date(date);
-    currentDateStart.setHours(0, 0, 0, 0);
-    const currentDateEnd = new Date(date);
-    currentDateEnd.setHours(23, 59, 59, 999);
+    // Handle different start time formats from Google Calendar API
+    if (event.start.date) {
+      // All-day event
+      eventDate = new Date(event.start.date + "T00:00:00");
+    } else if (event.start.dateTime) {
+      // Timed event
+      eventDate = new Date(event.start.dateTime);
+    } else if (typeof event.start === "string") {
+      // Direct string format
+      eventDate = new Date(event.start);
+    } else {
+      return false;
+    }
 
-    return eventStart <= currentDateEnd && eventEnd >= currentDateStart;
+    // Use local date comparison to avoid timezone issues
+    const eventLocalDate = new Date(
+      eventDate.getFullYear(),
+      eventDate.getMonth(),
+      eventDate.getDate()
+    );
+    const targetLocalDate = new Date(
+      targetDate.getFullYear(),
+      targetDate.getMonth(),
+      targetDate.getDate()
+    );
+
+    return eventLocalDate.getTime() === targetLocalDate.getTime();
   });
 };
 
@@ -145,7 +166,7 @@ export const getAllEventsForDate = (tasks, googleCalendarEvents, date) => {
       type: "google_calendar",
       id: event.id || `google-${Date.now()}-${Math.random()}`,
       title: event.title || event.summary || "Google Calendar Event",
-      category: "Google Calendar",
+      category: null, // Google Calendar events don't have categories
       // Convert Google Calendar event times to match task format
       startDate: event.start ? new Date(event.start) : null,
       endDate: event.end ? new Date(event.end) : null,

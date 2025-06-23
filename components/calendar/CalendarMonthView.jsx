@@ -13,7 +13,7 @@ const CalendarMonthView = ({ currentDate, tasks, onDateClick }) => {
   const categories = userData?.categories || [];
 
   // Use our new Google Calendar integration
-  const { googleEvents, settings } = useGoogleCalendarIntegration(
+  const { googleEvents, settings, error } = useGoogleCalendarIntegration(
     tasks,
     currentDate,
     "month"
@@ -137,24 +137,35 @@ const CalendarMonthView = ({ currentDate, tasks, onDateClick }) => {
               {/* Events */}
               <div className="flex-1 px-2 pb-2 overflow-hidden">
                 <div className="space-y-1">
-                  {events.slice(0, 3).map((event, eventIndex) => (
+                  {error && events.length === 0 ? (
                     <div
-                      key={event.id || eventIndex}
-                      className={`text-xs px-2 py-1 rounded truncate ${getCategoryBgColor(
-                        event.category,
-                        event.isDone,
-                        event.type,
-                        categories
-                      )}`}
-                      title={event.title}
+                      className="text-xs text-red-400 px-2 py-1"
+                      title={error}
                     >
-                      {event.title}
+                      Failed to load events
                     </div>
-                  ))}
-                  {events.length > 3 && (
-                    <div className="text-xs text-gray-500 px-2">
-                      +{events.length - 3} more
-                    </div>
+                  ) : (
+                    <>
+                      {events.slice(0, 3).map((event, eventIndex) => (
+                        <div
+                          key={event.id || eventIndex}
+                          className={`text-xs px-2 py-1 rounded truncate ${getCategoryBgColor(
+                            event.category,
+                            event.isDone,
+                            event.type,
+                            categories
+                          )}`}
+                          title={event.title}
+                        >
+                          {event.title}
+                        </div>
+                      ))}
+                      {events.length > 3 && (
+                        <div className="text-xs text-gray-500 px-2">
+                          +{events.length - 3} more
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

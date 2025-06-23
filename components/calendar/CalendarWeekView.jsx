@@ -19,11 +19,8 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
   const categories = userData?.categories || [];
 
   // Use our new Google Calendar integration
-  const { googleEvents, settings } = useGoogleCalendarIntegration(
-    tasks,
-    currentDate,
-    "week"
-  );
+  const { googleEvents, settings, error, isLoading } =
+    useGoogleCalendarIntegration(tasks, currentDate, "week");
 
   // Generate week data
   const weekData = useMemo(() => generateWeekData(currentDate), [currentDate]);
@@ -56,6 +53,7 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
         categories={categories}
         allDayHeight={allDayHeight}
         onTaskClick={handleTaskClick}
+        error={error}
       />
 
       {/* Calendar body with time slots - Scrollable */}
@@ -85,6 +83,7 @@ const CalendarWeekView = ({ currentDate, tasks, onDateClick }) => {
             googleCalendarEvents={settings.showGoogleEvents ? googleEvents : []}
             categories={categories}
             onTaskClick={handleTaskClick}
+            error={error}
           />
         </div>
       </div>
