@@ -28,10 +28,29 @@ const TaskCard = ({ task, onEdit }) => {
   }, [task.isDone, task.title, task.taskDate, task.category]);
 
   const handleDelete = async () => {
+    // Confirm deletion, especially if it has a Google Calendar event
+    const hasGoogleCalendarEvent = task.googleCalendarEventId;
+    const confirmMessage = hasGoogleCalendarEvent
+      ? `Are you sure you want to delete "${task.title}"?\n\nThis will also delete the associated Google Calendar event.`
+      : `Are you sure you want to delete "${task.title}"?`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
     try {
+      console.log(
+        `🗑️ User initiated deletion of task "${task.title}"${
+          hasGoogleCalendarEvent ? " (with Google Calendar event)" : ""
+        }`
+      );
+
       await deleteTask(task.id);
+
+      console.log(`✅ Task "${task.title}" deletion completed`);
     } catch (err) {
-      alert("Failed to delete task");
+      console.error("Failed to delete task:", err);
+      alert("Failed to delete task. Please try again.");
     }
   };
 

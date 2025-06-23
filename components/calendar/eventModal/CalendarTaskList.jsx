@@ -1,7 +1,12 @@
 import CalendarTaskItem from "./CalendarTaskItem";
 import CalendarEmptyState from "./CalendarEmptyState";
 
-const CalendarTaskList = ({ dayTasks, categories, onEditTask }) => {
+const CalendarTaskList = ({
+  dayTasks,
+  categories,
+  onEditTask,
+  onTaskDeleted,
+}) => {
   if (dayTasks.length === 0) {
     return <CalendarEmptyState />;
   }
@@ -14,10 +19,11 @@ const CalendarTaskList = ({ dayTasks, categories, onEditTask }) => {
           task={task}
           categories={categories}
           onEditTask={onEditTask}
+          onTaskDeleted={onTaskDeleted}
         />
       ))}
     </div>
   );
 };
 
-export default CalendarTaskList; 
+export default CalendarTaskList;

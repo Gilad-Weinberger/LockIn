@@ -138,6 +138,12 @@ const CalendarEventModal = ({
     setEditingTask(task);
   };
 
+  const handleTaskDeleted = (taskId) => {
+    // The task will be automatically removed from the list due to the real-time listener
+    // We can optionally add any additional cleanup here if needed
+    console.log(`Task ${taskId} deleted from calendar modal`);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -159,6 +165,7 @@ const CalendarEventModal = ({
             dayTasks={dayEvents}
             categories={categories}
             onEditTask={handleEditTask}
+            onTaskDeleted={handleTaskDeleted}
           />
         </div>
 

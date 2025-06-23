@@ -6,6 +6,11 @@ import {
   updateTask,
   formatDateTimeLocal,
 } from "@/lib/functions/taskFunctions";
+import { useGoogleCalendarSync } from "@/hooks/useGoogleCalendarSync";
+import {
+  createEndDateForEvent,
+  formatTaskForGoogleCalendar,
+} from "@/lib/utils/google-calendar-sync";
 
 const TaskForm = ({ open, onClose, task }) => {
   const [title, setTitle] = useState("");
@@ -18,6 +23,9 @@ const TaskForm = ({ open, onClose, task }) => {
   const { userData, user } = useAuth();
   const categories = userData?.categories || [];
   const titleInputRef = useRef(null);
+
+  const { syncEventToGoogleCalendar, checkGoogleCalendarAccess } =
+    useGoogleCalendarSync();
 
   useEffect(() => {
     if (task) {
@@ -52,6 +60,7 @@ const TaskForm = ({ open, onClose, task }) => {
     setIsLoading(true);
     setHasError("");
 
+    const taskDate = new Date(date);
     const taskData = {
       title,
       taskDate: date,
@@ -60,12 +69,67 @@ const TaskForm = ({ open, onClose, task }) => {
       isDone,
     };
 
+    // For events, set start and end dates for Google Calendar sync
+    if (taskType === "event") {
+      taskData.startDate = taskDate;
+      taskData.endDate = createEndDateForEvent(taskDate);
+    }
+
     try {
+      let taskResult;
+
       if (task) {
+        // Update existing task
         await updateTask(task.id, taskData);
+        taskResult = { id: task.id };
       } else {
-        await createTask(taskData, user?.uid);
+        // Create new task
+        taskResult = await createTask(taskData, user?.uid);
       }
+
+      // If this is an event and Google Calendar sync is available, sync it
+      if (
+        taskType === "event" &&
+        taskData.startDate &&
+        taskData.endDate &&
+        user?.uid
+      ) {
+        try {
+          const canSync = await checkGoogleCalendarAccess();
+
+          if (canSync) {
+            const eventData = formatTaskForGoogleCalendar({
+              ...taskData,
+              startDate: taskData.startDate,
+              endDate: taskData.endDate,
+            });
+
+            const syncResult = await syncEventToGoogleCalendar(
+              eventData,
+              taskResult.id
+            );
+
+            if (syncResult.success) {
+              console.log(
+                `✅ Task "${taskData.title}" synced to Google Calendar`
+              );
+            } else {
+              console.warn(
+                `⚠️ Failed to sync task "${taskData.title}" to Google Calendar:`,
+                syncResult.error
+              );
+              // Don't show error to user as the task was still created/updated successfully
+            }
+          }
+        } catch (syncError) {
+          console.error(
+            "Error attempting to sync to Google Calendar:",
+            syncError
+          );
+          // Don't fail the entire operation if sync fails
+        }
+      }
+
       setTitle("");
       setDate("");
       setCategory("");
@@ -120,6 +184,11 @@ const TaskForm = ({ open, onClose, task }) => {
                 📅 Event
               </button>
             </div>
+            {taskType === "event" && (
+              <p className="text-xs text-gray-500 text-center">
+                Events will automatically sync to Google Calendar if connected
+              </p>
+            )}
           </div>
 
           <input
@@ -173,7 +242,7 @@ const TaskForm = ({ open, onClose, task }) => {
           )}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isLoading || categories.length === 0}
           >
             {isLoading

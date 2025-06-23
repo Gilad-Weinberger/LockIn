@@ -7,95 +7,134 @@ import {
 import { updateTask } from "@/lib/functions/taskFunctions";
 import { canAccessFeature } from "@/lib/utils/subscription-utils";
 
+// Helper function to refresh tokens if needed
+const ensureValidTokens = async (userId, googleCalendarData) => {
+  const now = new Date().getTime();
+
+  if (googleCalendarData.expiryDate && now >= googleCalendarData.expiryDate) {
+    if (!googleCalendarData.refreshToken) {
+      throw new Error("Access token expired and no refresh token available");
+    }
+
+    try {
+      const googleCalendarService = new GoogleCalendarService();
+      const newTokens = await googleCalendarService.refreshToken(
+        googleCalendarData.refreshToken
+      );
+
+      await updateGoogleCalendarTokens(userId, newTokens);
+
+      return {
+        ...googleCalendarData,
+        accessToken: newTokens.access_token,
+        expiryDate: newTokens.expiry_date,
+      };
+    } catch (refreshError) {
+      console.error("Failed to refresh tokens:", refreshError);
+      throw new Error("Failed to refresh access token");
+    }
+  }
+
+  return googleCalendarData;
+};
+
+// Helper function to validate user access and get calendar data
+const validateUserAndGetCalendarData = async (userId) => {
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  const canUseGoogleCalendar = await canAccessFeature(
+    userId,
+    "google_calendar"
+  );
+  if (!canUseGoogleCalendar) {
+    throw new Error("Pro subscription required for Google Calendar features");
+  }
+
+  const googleCalendarData = await getUserGoogleCalendarData(userId);
+  if (!googleCalendarData.connected) {
+    throw new Error("Google Calendar not connected");
+  }
+
+  return await ensureValidTokens(userId, googleCalendarData);
+};
+
+// Helper function to create and configure Google Calendar service
+const createGoogleCalendarService = (googleCalendarData) => {
+  const googleCalendarService = new GoogleCalendarService();
+  googleCalendarService.setCredentials({
+    access_token: googleCalendarData.accessToken,
+    refresh_token: googleCalendarData.refreshToken,
+    expiry_date: googleCalendarData.expiryDate,
+  });
+  return googleCalendarService;
+};
+
 export async function POST(request) {
   try {
     const { userId, eventData, taskId } = await request.json();
 
-    if (!userId || !eventData) {
+    if (!eventData) {
       return NextResponse.json(
-        { error: "User ID and event data are required" },
+        { error: "Event data is required" },
         { status: 400 }
       );
     }
 
-    // Check if user has pro access for Google Calendar features
-    const canUseGoogleCalendar = await canAccessFeature(
-      userId,
-      "google_calendar"
-    );
-
-    if (!canUseGoogleCalendar) {
+    // Validate event data
+    if (!eventData.title || !eventData.startTime || !eventData.endTime) {
       return NextResponse.json(
-        { error: "Pro subscription required for Google Calendar features" },
-        { status: 403 }
-      );
-    }
-
-    // Get user's Google Calendar data
-    const googleCalendarData = await getUserGoogleCalendarData(userId);
-
-    if (!googleCalendarData.connected) {
-      return NextResponse.json(
-        { error: "Google Calendar not connected" },
+        { error: "Event data must include title, startTime, and endTime" },
         { status: 400 }
       );
     }
 
-    // Check if tokens need refresh
-    const now = new Date().getTime();
-    if (googleCalendarData.expiryDate && now >= googleCalendarData.expiryDate) {
-      // Token expired, try to refresh
-      if (!googleCalendarData.refreshToken) {
-        return NextResponse.json(
-          { error: "Access token expired and no refresh token available" },
-          { status: 401 }
-        );
-      }
-
-      try {
-        const googleCalendarService = new GoogleCalendarService();
-        const newTokens = await googleCalendarService.refreshToken(
-          googleCalendarData.refreshToken
-        );
-
-        // Update tokens in database
-        await updateGoogleCalendarTokens(userId, newTokens);
-
-        // Use new tokens
-        googleCalendarData.accessToken = newTokens.access_token;
-        googleCalendarData.expiryDate = newTokens.expiry_date;
-      } catch (refreshError) {
-        console.error("Failed to refresh tokens:", refreshError);
-        return NextResponse.json(
-          { error: "Failed to refresh access token" },
-          { status: 401 }
-        );
-      }
-    }
-
-    // Create Google Calendar service and set credentials
-    const googleCalendarService = new GoogleCalendarService();
-    googleCalendarService.setCredentials({
-      access_token: googleCalendarData.accessToken,
-      refresh_token: googleCalendarData.refreshToken,
-      expiry_date: googleCalendarData.expiryDate,
-    });
+    const googleCalendarData = await validateUserAndGetCalendarData(userId);
+    const googleCalendarService =
+      createGoogleCalendarService(googleCalendarData);
 
     // Create event in Google Calendar
     const googleEvent = await googleCalendarService.createEvent(eventData);
 
-    // Return the google event info so client can store the mapping
+    // Update task with Google Calendar mapping if taskId provided
+    if (taskId) {
+      try {
+        await updateTask(taskId, {
+          googleCalendarSynced: true,
+          googleCalendarEventId: googleEvent.id,
+          lastSyncedAt: new Date(),
+        });
+      } catch (taskUpdateError) {
+        console.error(
+          "Failed to update task with Google Calendar mapping:",
+          taskUpdateError
+        );
+        // Don't fail the entire operation if task update fails
+      }
+    }
+
     return NextResponse.json({
       success: true,
       googleEventId: googleEvent.id,
       googleEvent: googleEvent,
-      taskId: taskId, // Include taskId in response for client-side mapping
+      taskId: taskId,
     });
   } catch (error) {
-    console.error("Error syncing to Google Calendar:", error);
+    console.error("Error creating Google Calendar event:", error);
+
+    // Return appropriate error status based on error type
+    const status = error.message.includes("subscription required")
+      ? 403
+      : error.message.includes("not connected")
+      ? 400
+      : error.message.includes("not authenticated")
+      ? 401
+      : 500;
+
     return NextResponse.json(
-      { error: "Failed to sync event to Google Calendar" },
-      { status: 500 }
+      { error: error.message || "Failed to create Google Calendar event" },
+      { status }
     );
   }
 }
@@ -107,78 +146,19 @@ export async function PUT(request) {
       eventData,
       googleEventId,
       taskId,
-      updateTask: shouldUpdateTask,
+      updateTask: shouldUpdateTask = false,
     } = await request.json();
 
-    if (!userId || !eventData || !googleEventId) {
+    if (!eventData || !googleEventId) {
       return NextResponse.json(
-        { error: "User ID, event data, and Google event ID are required" },
+        { error: "Event data and Google event ID are required" },
         { status: 400 }
       );
     }
 
-    // Check if user has pro access for Google Calendar features
-    const canUseGoogleCalendar = await canAccessFeature(
-      userId,
-      "google_calendar"
-    );
-
-    if (!canUseGoogleCalendar) {
-      return NextResponse.json(
-        { error: "Pro subscription required for Google Calendar features" },
-        { status: 403 }
-      );
-    }
-
-    // Get user's Google Calendar data
-    const googleCalendarData = await getUserGoogleCalendarData(userId);
-
-    if (!googleCalendarData.connected) {
-      return NextResponse.json(
-        { error: "Google Calendar not connected" },
-        { status: 400 }
-      );
-    }
-
-    // Check if tokens need refresh
-    const now = new Date().getTime();
-    if (googleCalendarData.expiryDate && now >= googleCalendarData.expiryDate) {
-      // Token expired, try to refresh
-      if (!googleCalendarData.refreshToken) {
-        return NextResponse.json(
-          { error: "Access token expired and no refresh token available" },
-          { status: 401 }
-        );
-      }
-
-      try {
-        const googleCalendarService = new GoogleCalendarService();
-        const newTokens = await googleCalendarService.refreshToken(
-          googleCalendarData.refreshToken
-        );
-
-        // Update tokens in database
-        await updateGoogleCalendarTokens(userId, newTokens);
-
-        // Use new tokens
-        googleCalendarData.accessToken = newTokens.access_token;
-        googleCalendarData.expiryDate = newTokens.expiry_date;
-      } catch (refreshError) {
-        console.error("Failed to refresh tokens:", refreshError);
-        return NextResponse.json(
-          { error: "Failed to refresh access token" },
-          { status: 401 }
-        );
-      }
-    }
-
-    // Create Google Calendar service and set credentials
-    const googleCalendarService = new GoogleCalendarService();
-    googleCalendarService.setCredentials({
-      access_token: googleCalendarData.accessToken,
-      refresh_token: googleCalendarData.refreshToken,
-      expiry_date: googleCalendarData.expiryDate,
-    });
+    const googleCalendarData = await validateUserAndGetCalendarData(userId);
+    const googleCalendarService =
+      createGoogleCalendarService(googleCalendarData);
 
     // Update event in Google Calendar
     const googleEvent = await googleCalendarService.updateEvent(
@@ -189,11 +169,13 @@ export async function PUT(request) {
     // Update the corresponding task if requested and taskId is provided
     if (shouldUpdateTask && taskId) {
       try {
-        const taskUpdates = {};
+        const taskUpdates = {
+          lastSyncedAt: new Date(),
+        };
 
         // Update task title if the event summary changed
-        if (eventData.summary) {
-          taskUpdates.title = eventData.summary;
+        if (eventData.summary || eventData.title) {
+          taskUpdates.title = eventData.summary || eventData.title;
         }
 
         // Update start and end dates if they changed
@@ -201,18 +183,20 @@ export async function PUT(request) {
           if (eventData.start.dateTime) {
             taskUpdates.startDate = new Date(eventData.start.dateTime);
           } else if (eventData.start.date) {
-            // For all-day events
             taskUpdates.startDate = new Date(eventData.start.date);
           }
+        } else if (eventData.startTime) {
+          taskUpdates.startDate = new Date(eventData.startTime);
         }
 
         if (eventData.end) {
           if (eventData.end.dateTime) {
             taskUpdates.endDate = new Date(eventData.end.dateTime);
           } else if (eventData.end.date) {
-            // For all-day events
             taskUpdates.endDate = new Date(eventData.end.date);
           }
+        } else if (eventData.endTime) {
+          taskUpdates.endDate = new Date(eventData.endTime);
         }
 
         // Update task date for compatibility with existing task structure
@@ -221,7 +205,8 @@ export async function PUT(request) {
         }
 
         // Only update if there are actual changes
-        if (Object.keys(taskUpdates).length > 0) {
+        if (Object.keys(taskUpdates).length > 1) {
+          // More than just lastSyncedAt
           await updateTask(taskId, taskUpdates);
           console.log(
             `Task ${taskId} updated with calendar changes:`,
@@ -244,9 +229,18 @@ export async function PUT(request) {
     });
   } catch (error) {
     console.error("Error updating Google Calendar event:", error);
+
+    const status = error.message.includes("subscription required")
+      ? 403
+      : error.message.includes("not connected")
+      ? 400
+      : error.message.includes("not authenticated")
+      ? 401
+      : 500;
+
     return NextResponse.json(
-      { error: "Failed to update Google Calendar event" },
-      { status: 500 }
+      { error: error.message || "Failed to update Google Calendar event" },
+      { status }
     );
   }
 }
@@ -256,54 +250,58 @@ export async function DELETE(request) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get("userId");
     const googleEventId = searchParams.get("googleEventId");
+    const taskId = searchParams.get("taskId");
 
-    if (!userId || !googleEventId) {
+    if (!googleEventId) {
       return NextResponse.json(
-        { error: "User ID and Google event ID are required" },
+        { error: "Google event ID is required" },
         { status: 400 }
       );
     }
 
-    // Check if user has pro access for Google Calendar features
-    const canUseGoogleCalendar = await canAccessFeature(
-      userId,
-      "google_calendar"
-    );
-
-    if (!canUseGoogleCalendar) {
-      return NextResponse.json(
-        { error: "Pro subscription required for Google Calendar features" },
-        { status: 403 }
-      );
-    }
-
-    // Get user's Google Calendar data
-    const googleCalendarData = await getUserGoogleCalendarData(userId);
-
-    if (!googleCalendarData.connected) {
-      return NextResponse.json(
-        { error: "Google Calendar not connected" },
-        { status: 400 }
-      );
-    }
-
-    // Create Google Calendar service and set credentials
-    const googleCalendarService = new GoogleCalendarService();
-    googleCalendarService.setCredentials({
-      access_token: googleCalendarData.accessToken,
-      refresh_token: googleCalendarData.refreshToken,
-      expiry_date: googleCalendarData.expiryDate,
-    });
+    const googleCalendarData = await validateUserAndGetCalendarData(userId);
+    const googleCalendarService =
+      createGoogleCalendarService(googleCalendarData);
 
     // Delete event from Google Calendar
     await googleCalendarService.deleteEvent(googleEventId);
 
-    return NextResponse.json({ success: true });
+    // Update task to remove Google Calendar mapping if taskId provided
+    if (taskId) {
+      try {
+        await updateTask(taskId, {
+          googleCalendarSynced: false,
+          googleCalendarEventId: null,
+          lastSyncedAt: new Date(),
+        });
+      } catch (taskUpdateError) {
+        console.error(
+          "Failed to update task after Google Calendar deletion:",
+          taskUpdateError
+        );
+        // Don't fail the entire operation if task update fails
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      deletedEventId: googleEventId,
+      taskUpdated: taskId ? true : false,
+    });
   } catch (error) {
     console.error("Error deleting Google Calendar event:", error);
+
+    const status = error.message.includes("subscription required")
+      ? 403
+      : error.message.includes("not connected")
+      ? 400
+      : error.message.includes("not authenticated")
+      ? 401
+      : 500;
+
     return NextResponse.json(
-      { error: "Failed to delete Google Calendar event" },
-      { status: 500 }
+      { error: error.message || "Failed to delete Google Calendar event" },
+      { status }
     );
   }
 }

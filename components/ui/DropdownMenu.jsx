@@ -161,7 +161,7 @@ const DropdownMenu = () => {
               variant="danger"
               disabled={isLoggingOut}
             >
-              {isLoggingOut ? "Logging out..." : "Logout"}
+              {isLoggingOut ? "Logging out..." : "Sign out"}
             </MenuButton>
           </div>
         </div>

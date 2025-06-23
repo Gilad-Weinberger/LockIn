@@ -1,7 +1,13 @@
-import { ClockIcon, TagIcon, CheckIcon, EditIcon } from "./CalendarIcons";
-import { CATEGORY_COLORS } from "@/lib/functions/taskFunctions";
+import {
+  ClockIcon,
+  TagIcon,
+  CheckIcon,
+  EditIcon,
+  CloseIcon,
+} from "./CalendarIcons";
+import { CATEGORY_COLORS, deleteTask } from "@/lib/functions/taskFunctions";
 
-const CalendarTaskItem = ({ task, categories, onEditTask }) => {
+const CalendarTaskItem = ({ task, categories, onEditTask, onTaskDeleted }) => {
   // Helper function to get category border color
   const getCategoryBorderColor = (category, type) => {
     // Special styling for Google Calendar events
@@ -117,11 +123,51 @@ const CalendarTaskItem = ({ task, categories, onEditTask }) => {
     }
   };
 
+  const handleDelete = async () => {
+    // Only allow deletion of regular tasks (not Google Calendar events)
+    if (task.type === "google_calendar") {
+      alert(
+        "Google Calendar events cannot be deleted from here. Please delete them from Google Calendar directly."
+      );
+      return;
+    }
+
+    // Confirm deletion, especially if it has a Google Calendar event
+    const hasGoogleCalendarEvent = task.googleCalendarEventId;
+    const confirmMessage = hasGoogleCalendarEvent
+      ? `Are you sure you want to delete "${task.title}"?\n\nThis will also delete the associated Google Calendar event.`
+      : `Are you sure you want to delete "${task.title}"?`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      console.log(
+        `🗑️ User initiated deletion of task "${task.title}"${
+          hasGoogleCalendarEvent ? " (with Google Calendar event)" : ""
+        }`
+      );
+
+      await deleteTask(task.id);
+
+      // Optionally call a callback to refresh the task list
+      if (onTaskDeleted) {
+        onTaskDeleted(task.id);
+      }
+
+      console.log(`✅ Task "${task.title}" deletion completed`);
+    } catch (err) {
+      console.error("Failed to delete task:", err);
+      alert("Failed to delete task. Please try again.");
+    }
+  };
+
   const eventTime = getEventTime();
 
   return (
     <div
-      className={`p-4 rounded-lg border-l-4 ${
+      className={`p-4 rounded-lg border-l-4 group hover:shadow-md transition-shadow duration-200 ${
         task.isDone
           ? "bg-green-50 border-green-400"
           : `${getCategoryBgColor(
@@ -169,19 +215,39 @@ const CalendarTaskItem = ({ task, categories, onEditTask }) => {
               <CheckIcon />
             </div>
           )}
-          {/* Show edit button for both regular tasks and Google Calendar events */}
-          <button
-            onClick={() => onEditTask(task)}
-            className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-100 rounded transition-all duration-200"
-            aria-label={`Edit ${
-              task.type === "google_calendar" ? "Google Calendar event" : "task"
-            }`}
-            title={`Edit ${
-              task.type === "google_calendar" ? "Google Calendar event" : "task"
-            }`}
-          >
-            <EditIcon />
-          </button>
+          {/* Action buttons - only show on hover */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            {/* Edit button */}
+            <button
+              onClick={() => onEditTask(task)}
+              className="flex-shrink-0 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-100 rounded transition-all duration-200"
+              aria-label={`Edit ${
+                task.type === "google_calendar"
+                  ? "Google Calendar event"
+                  : "task"
+              }`}
+              title={`Edit ${
+                task.type === "google_calendar"
+                  ? "Google Calendar event"
+                  : "task"
+              }`}
+            >
+              <EditIcon />
+            </button>
+
+            {/* Delete button - only for regular tasks */}
+            {task.type !== "google_calendar" && (
+              <button
+                onClick={handleDelete}
+                className="flex-shrink-0 p-1 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded transition-all duration-200"
+                aria-label="Delete task"
+                title="Delete task"
+              >
+                <CloseIcon />
+              </button>
+            )}
+          </div>
+
           {/* Show Google Calendar indicator for Google events */}
           {task.type === "google_calendar" && (
             <div className="flex-shrink-0 text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded">
