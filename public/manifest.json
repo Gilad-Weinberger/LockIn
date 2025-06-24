@@ -1,0 +1,29 @@
+{
+  "name": "LockIn - Focus & Productivity App",
+  "short_name": "LockIn",
+  "description": "Transform your productivity with AI-powered task scheduling and smart calendar integration",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["productivity", "utilities", "business"],
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "features": [
+    "AI-powered task scheduling",
+    "Calendar integration",
+    "Priority matrix",
+    "Task management",
+    "Time blocking",
+    "Focus tracking"
+  ]
+}

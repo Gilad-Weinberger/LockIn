@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Navbar from "../../components/ui/Navbar";
-import PricingHeader from "../../components/pricing/PricingHeader";
-import PricingGrid from "../../components/pricing/PricingGrid";
+import { PricingHeader, PricingGrid } from "@/components/pricing";
 import { useAuth } from "@/context/AuthContext";
 import { markPricingAsShown } from "@/lib/functions/userFunctions";
 
