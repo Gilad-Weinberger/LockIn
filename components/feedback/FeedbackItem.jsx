@@ -67,6 +67,11 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
             <h3 className="text-lg font-semibold text-gray-900 truncate">
               {feedback.title}
             </h3>
+            {feedback.subscriptionPlan === "pro" && (
+              <span className="px-2 py-1 text-xs font-medium rounded-full border bg-purple-50 text-purple-600 border-purple-200">
+                Pro User
+              </span>
+            )}
             {feedback.handled && (
               <span className="px-2 py-1 text-xs font-medium rounded-full border bg-green-50 text-green-600 border-green-200">
                 Handled
