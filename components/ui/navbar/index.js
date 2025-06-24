@@ -1,5 +1,4 @@
 // Navbar components
-export { default as Navbar } from ".";
 export { default as NavbarLogo } from "./NavbarLogo";
 export { default as NavigationLinks } from "./NavigationLinks";
 export { default as UserDropdownMenu } from "../UserDropdownMenu";

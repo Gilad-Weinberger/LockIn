@@ -32,7 +32,14 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
    */
   const fetchSettings = useCallback(
     async (retryCount = 0) => {
-      if (!user?.uid) return;
+      if (!user?.uid) {
+        setSettings({
+          connected: false,
+          autoSync: false,
+          showGoogleEvents: false,
+        });
+        return;
+      }
 
       try {
         const response = await fetch(
@@ -202,7 +209,8 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
    */
   const shouldSyncTask = useCallback(
     (task) => {
-      if (!task || !settings.connected || !settings.autoSync) return false;
+      if (!user?.uid || !task || !settings.connected || !settings.autoSync)
+        return false;
 
       // Must have scheduling information
       if (!task.startDate || !task.endDate) return false;
@@ -222,21 +230,25 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
 
       return true;
     },
-    [settings.connected, settings.autoSync]
+    [user?.uid, settings.connected, settings.autoSync]
   );
 
   /**
    * Get tasks that need to be synced
    */
   const getTasksToSync = useCallback(() => {
+    if (!user?.uid) return [];
     return tasks.filter(shouldSyncTask);
-  }, [tasks, shouldSyncTask]);
+  }, [user?.uid, tasks, shouldSyncTask]);
 
   /**
    * Sync a single task to Google Calendar
    */
   const syncTask = useCallback(
     async (task) => {
+      if (!user?.uid)
+        return { success: false, error: "User not authenticated" };
+
       if (!shouldSyncTask(task))
         return { success: false, error: "Task should not be synced" };
 
@@ -283,6 +295,9 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
    */
   const updateGoogleEvent = useCallback(
     async (task) => {
+      if (!user?.uid)
+        return { success: false, error: "User not authenticated" };
+
       if (!task.googleCalendarEventId)
         return { success: false, error: "No Google Calendar event ID" };
 
@@ -328,6 +343,9 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
    */
   const deleteGoogleEvent = useCallback(
     async (googleEventId) => {
+      if (!user?.uid)
+        return { success: false, error: "User not authenticated" };
+
       if (!googleEventId)
         return { success: false, error: "No Google Calendar event ID" };
 
@@ -355,6 +373,8 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
    * Bulk sync multiple tasks
    */
   const syncAllTasks = useCallback(async () => {
+    if (!user?.uid) return { success: false, error: "User not authenticated" };
+
     const tasksToSync = getTasksToSync();
     if (tasksToSync.length === 0) return { success: true, synced: 0 };
 
@@ -380,7 +400,7 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
     } finally {
       setIsSyncing(false);
     }
-  }, [getTasksToSync, syncTask]);
+  }, [user?.uid, getTasksToSync, syncTask]);
 
   // =====================================
   // AUTO-SYNC LOGIC
@@ -390,7 +410,7 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
    * Auto-sync tasks when they change
    */
   useEffect(() => {
-    if (!settings.connected || !settings.autoSync) return;
+    if (!user?.uid || !settings.connected || !settings.autoSync) return;
 
     const tasksToSync = getTasksToSync();
     if (tasksToSync.length === 0) return;
@@ -407,6 +427,7 @@ export const useGoogleCalendarIntegration = (tasks = [], currentDate, view) => {
 
     return () => clearTimeout(timer);
   }, [
+    user?.uid,
     tasks,
     settings.connected,
     settings.autoSync,

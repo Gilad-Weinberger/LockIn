@@ -3,6 +3,7 @@
 import FeedbackItem from "./FeedbackItem";
 import { useFeedback } from "@/hooks/useFeedback";
 import { useAuth } from "@/context/AuthContext";
+import { AuthRequiredMessage } from "@/components/ui";
 
 const FeedbackList = ({ activeFilter, showHandled, isAdmin }) => {
   const { user } = useAuth();
@@ -10,6 +11,16 @@ const FeedbackList = ({ activeFilter, showHandled, isAdmin }) => {
     activeFilter,
     showHandled
   );
+
+  // Show a message if user is not authenticated
+  if (!user) {
+    return (
+      <AuthRequiredMessage
+        title="Login Required"
+        message="Please log in to view and interact with feedback."
+      />
+    );
+  }
 
   if (isLoading) {
     return (

@@ -12,9 +12,11 @@ export const useTasks = (filterDone = null) => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Only set up listener if user is authenticated
     if (!user) {
       setTasks([]);
       setIsLoading(false);
+      setHasError("");
       return;
     }
 
@@ -54,7 +56,7 @@ export const useTasks = (filterDone = null) => {
     );
 
     return () => unsubscribe();
-  }, [user]);
+  }, [user]); // Make sure user is in the dependency array
 
   // Filter tasks by done status if specified (userId filtering now happens in the query)
   const filteredTasks =

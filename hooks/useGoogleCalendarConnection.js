@@ -5,19 +5,18 @@ export const useGoogleCalendarConnection = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    // Only handle connection if user is authenticated
+    if (!user?.uid) {
+      return;
+    }
+
     // Handle connection completion from OAuth flow
     const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.get("google_calendar_success") === "true") {
-      if (user?.uid) {
-        handleConnectionComplete();
-        // Clean up URL
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname
-        );
-      }
+      handleConnectionComplete();
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     async function handleConnectionComplete() {
@@ -48,5 +47,5 @@ export const useGoogleCalendarConnection = () => {
         alert("Failed to connect Google Calendar. Please try again.");
       }
     }
-  }, [user]);
+  }, [user?.uid]); // Make sure to include user in dependencies
 };

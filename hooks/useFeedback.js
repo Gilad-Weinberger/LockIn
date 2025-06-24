@@ -7,6 +7,7 @@ import {
   where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { useAuth } from "@/context/AuthContext";
 import {
   addFeatureSuggestion,
   toggleVoteForFeature,
@@ -20,8 +21,17 @@ export const useFeedback = (activeFilter = "recent", showHandled = false) => {
   const [feedbackItems, setFeedbackItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { user } = useAuth();
 
   useEffect(() => {
+    // Only set up listener if user is authenticated
+    if (!user) {
+      setFeedbackItems([]);
+      setIsLoading(false);
+      setError(null);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -57,7 +67,7 @@ export const useFeedback = (activeFilter = "recent", showHandled = false) => {
 
     // Cleanup function
     return () => unsubscribe();
-  }, []);
+  }, [user]); // Add user as dependency
 
   // Filter and sort items based on current filter and show handled setting
   const filteredAndSortedItems = useMemo(() => {
