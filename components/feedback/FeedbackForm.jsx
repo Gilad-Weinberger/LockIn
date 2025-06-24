@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { addFeatureSuggestion } from "@/lib/functions/feedbackFunctions";
+import { useFeedback } from "@/hooks/useFeedback";
 import { useAuth } from "@/context/AuthContext";
 
-const FeedbackForm = ({ onFeatureAdded }) => {
+const FeedbackForm = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
+  const { submitFeedback } = useFeedback();
 
   const isLoggedIn = user && user.uid;
 
@@ -28,7 +29,7 @@ const FeedbackForm = ({ onFeatureAdded }) => {
     setIsSubmitting(true);
 
     try {
-      const result = await addFeatureSuggestion(
+      const result = await submitFeedback(
         title.trim(),
         description.trim(),
         user.uid
@@ -37,11 +38,6 @@ const FeedbackForm = ({ onFeatureAdded }) => {
       if (result.success) {
         setTitle("");
         setDescription("");
-
-        // Callback to refresh the list
-        if (onFeatureAdded) {
-          onFeatureAdded();
-        }
       }
     } catch (error) {
       console.error("Error submitting feedback:", error);

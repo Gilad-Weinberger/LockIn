@@ -1,77 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import FeedbackItem from "./FeedbackItem";
-import { getFeedbackItems } from "@/lib/functions/feedbackFunctions";
+import { useFeedback } from "@/hooks/useFeedback";
 import { useAuth } from "@/context/AuthContext";
 
-const FeedbackList = ({
-  activeFilter,
-  showHandled,
-  refreshTrigger,
-  isAdmin,
-}) => {
-  const [feedbackItems, setFeedbackItems] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+const FeedbackList = ({ activeFilter, showHandled, isAdmin }) => {
   const { user } = useAuth();
-
-  const loadFeedbackItems = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const result = await getFeedbackItems();
-
-      if (result.success) {
-        setFeedbackItems(result.data);
-      } else {
-        setError(result.error);
-      }
-    } catch (err) {
-      setError("Failed to load feedback items");
-      console.error("Error loading feedback:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadFeedbackItems();
-  }, [refreshTrigger]);
-
-  const handleVoteUpdate = (feedbackId) => {
-    // Refresh the entire list to get updated vote counts
-    loadFeedbackItems();
-  };
-
-  // Filter and sort items based on current filter and show handled setting
-  const getFilteredAndSortedItems = () => {
-    let items = [...feedbackItems];
-
-    // First filter by handled status
-    if (!showHandled) {
-      items = items.filter((item) => item.handled !== true);
-    }
-
-    // Then sort based on the active filter
-    if (activeFilter === "recent") {
-      // Sort by creation date (most recent first)
-      items.sort((a, b) => b.createdAt - a.createdAt);
-    } else if (activeFilter === "wanted") {
-      // Sort by vote count (most voted first), then by creation date
-      items.sort((a, b) => {
-        if (a.voteCount === b.voteCount) {
-          return b.createdAt - a.createdAt; // Most recent first for ties
-        }
-        return b.voteCount - a.voteCount; // Higher votes first
-      });
-    }
-
-    return items;
-  };
-
-  const filteredItems = getFilteredAndSortedItems();
+  const { feedbackItems, allFeedbackItems, isLoading, error } = useFeedback(
+    activeFilter,
+    showHandled
+  );
 
   if (isLoading) {
     return (
@@ -128,7 +66,7 @@ const FeedbackList = ({
         </h3>
         <p className="text-gray-500 mb-4">{error}</p>
         <button
-          onClick={loadFeedbackItems}
+          onClick={() => window.location.reload()}
           className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
         >
           Try Again
@@ -137,9 +75,9 @@ const FeedbackList = ({
     );
   }
 
-  if (filteredItems.length === 0) {
+  if (feedbackItems.length === 0) {
     const getEmptyMessage = () => {
-      if (feedbackItems.length === 0) {
+      if (allFeedbackItems.length === 0) {
         return {
           title: "No feedback yet",
           message: "Be the first to suggest a feature!",
@@ -199,11 +137,10 @@ const FeedbackList = ({
 
   return (
     <div className="space-y-4">
-      {filteredItems.map((item) => (
+      {feedbackItems.map((item) => (
         <FeedbackItem
           key={item.id}
           feedback={item}
-          onVoteUpdate={handleVoteUpdate}
           currentUserId={user?.uid || null}
           isAdmin={isAdmin}
         />

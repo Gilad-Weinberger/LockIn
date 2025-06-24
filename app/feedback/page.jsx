@@ -10,13 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function FeedbackPage() {
   const [activeFilter, setActiveFilter] = useState("recent");
   const [showHandled, setShowHandled] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const { isAdmin } = useAuth();
-
-  const handleFeatureAdded = () => {
-    // Trigger a refresh of the feedback list
-    setRefreshTrigger((prev) => prev + 1);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
@@ -30,7 +24,7 @@ export default function FeedbackPage() {
             {/* Feedback Form - Left Column */}
             <div className="lg:col-span-1">
               <div className="sticky top-8">
-                <FeedbackForm onFeatureAdded={handleFeatureAdded} />
+                <FeedbackForm />
               </div>
             </div>
 
@@ -47,7 +41,6 @@ export default function FeedbackPage() {
               <FeedbackList
                 activeFilter={activeFilter}
                 showHandled={showHandled}
-                refreshTrigger={refreshTrigger}
                 isAdmin={isAdmin}
               />
             </div>
