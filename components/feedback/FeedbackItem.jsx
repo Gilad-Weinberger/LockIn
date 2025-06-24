@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { useFeedback } from "@/hooks/useFeedback";
+import { DeleteIcon, ActionButton } from "@/components/ui/Icons";
 
 const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
   const [isTogglingHandled, setIsTogglingHandled] = useState(false);
-  const { toggleVoteForFeedback, updateFeedback } = useFeedback();
+  const { toggleVoteForFeedback, updateFeedback, deleteFeedbackItem } =
+    useFeedback();
 
   // Check if user is logged in and has voted
   const isLoggedIn = currentUserId && currentUserId !== "anonymous";
@@ -14,6 +16,9 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
     currentUserId &&
     feedback.votes.includes(currentUserId);
   const voteCount = Array.isArray(feedback.votes) ? feedback.votes.length : 0;
+
+  // Check if current user is the owner of this feedback
+  const isOwner = isLoggedIn && feedback.userId === currentUserId;
 
   const handleVoteToggle = async () => {
     // Prevent voting if user is not logged in
@@ -41,6 +46,30 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
     }
   };
 
+  const handleDelete = async () => {
+    const confirmMessage = `Are you sure you want to delete "${feedback.title}"?`;
+
+    if (!confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      console.log(`🗑️ User initiated deletion of feedback "${feedback.title}"`);
+
+      const result = await deleteFeedbackItem(feedback.id, currentUserId);
+
+      if (!result.success) {
+        alert(result.error || "Failed to delete feedback. Please try again.");
+        return;
+      }
+
+      console.log(`✅ Feedback "${feedback.title}" deletion completed`);
+    } catch (err) {
+      console.error("Failed to delete feedback:", err);
+      alert("Failed to delete feedback. Please try again.");
+    }
+  };
+
   const formatDate = (date) => {
     if (!date) return "";
     const now = new Date();
@@ -59,7 +88,7 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
+    <div className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 relative group">
       <div className="flex items-start justify-between">
         {/* Content */}
         <div className="flex-1 min-w-0">
@@ -90,6 +119,19 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
 
         {/* Admin Controls + Vote Button */}
         <div className="flex items-center ml-6 mt-2 space-x-3">
+          {/* Delete Button - Only visible to feedback owner on hover */}
+          {isOwner && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <ActionButton
+                variant="delete"
+                ariaLabel="Delete feedback"
+                onClick={handleDelete}
+              >
+                <DeleteIcon className="h-5 w-5 text-red-500" />
+              </ActionButton>
+            </div>
+          )}
+
           {/* Admin Toggle - Only visible to admins */}
           {isAdmin && (
             <div className="flex flex-col items-center">

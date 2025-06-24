@@ -11,6 +11,7 @@ import {
   addFeatureSuggestion,
   toggleVoteForFeature,
   updateFeedbackStatus,
+  deleteFeedback,
 } from "@/lib/functions/feedbackFunctions";
 
 const FEEDBACK_COLLECTION = "feedback";
@@ -165,6 +166,17 @@ export const useFeedback = (activeFilter = "recent", showHandled = false) => {
     }
   };
 
+  // Function to delete feedback (only by the user who created it)
+  const deleteFeedbackItem = async (feedbackId, userId) => {
+    try {
+      const result = await deleteFeedback(feedbackId, userId);
+      return result;
+    } catch (error) {
+      console.error("Error deleting feedback:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
   return {
     feedbackItems: filteredAndSortedItems,
     allFeedbackItems: feedbackItems,
@@ -173,5 +185,6 @@ export const useFeedback = (activeFilter = "recent", showHandled = false) => {
     submitFeedback,
     toggleVoteForFeedback,
     updateFeedback,
+    deleteFeedbackItem,
   };
 };
