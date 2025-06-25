@@ -56,7 +56,11 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
     try {
       console.log(`🗑️ User initiated deletion of feedback "${feedback.title}"`);
 
-      const result = await deleteFeedbackItem(feedback.id, currentUserId);
+      const result = await deleteFeedbackItem(
+        feedback.id,
+        currentUserId,
+        isAdmin
+      );
 
       if (!result.success) {
         alert(result.error || "Failed to delete feedback. Please try again.");
@@ -119,8 +123,8 @@ const FeedbackItem = ({ feedback, currentUserId = null, isAdmin }) => {
 
         {/* Admin Controls + Vote Button */}
         <div className="flex items-center ml-6 mt-2 space-x-3">
-          {/* Delete Button - Only visible to feedback owner on hover */}
-          {isOwner && (
+          {/* Delete Button - Visible to feedback owner and admins on hover */}
+          {(isOwner || isAdmin) && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               <ActionButton
                 variant="delete"

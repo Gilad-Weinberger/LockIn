@@ -176,10 +176,10 @@ export const useFeedback = (activeFilter = "recent", showHandled = false) => {
     }
   };
 
-  // Function to delete feedback (only by the user who created it)
-  const deleteFeedbackItem = async (feedbackId, userId) => {
+  // Function to delete feedback (by the user who created it or by admin)
+  const deleteFeedbackItem = async (feedbackId, userId, isAdmin = false) => {
     try {
-      const result = await deleteFeedback(feedbackId, userId);
+      const result = await deleteFeedback(feedbackId, userId, isAdmin);
       return result;
     } catch (error) {
       console.error("Error deleting feedback:", error);
