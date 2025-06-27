@@ -83,11 +83,11 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
       icon: (
         <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
           {/* Main diamond/star shape */}
-          <path d="M12 2l3 6 6 3-6 3-3 6-3-6-6-3 6-3z" />
+          <path d="M12 2L15 8L21 11L15 14L12 20L9 14L3 11L9 8Z" />
           {/* Small sparkles */}
-          <path d="M6 6l1 2 2 1-2 1-1 2-1-2-2-1 2-1z" />
-          <path d="M18 4l0.5 1 1 0.5-1 0.5-0.5 1-0.5-1-1-0.5 1-0.5z" />
-          <path d="M20 16l0.8 1.6 1.6 0.8-1.6 0.8-0.8 1.6-0.8-1.6-1.6-0.8 1.6-0.8z" />
+          <path d="M6 6L7 8L9 7L7 8L6 10L5 8L3 7L5 8Z" />
+          <path d="M18 4L18.5 5L19.5 4.5L18.5 5L18 6L17.5 5L16.5 4.5L17.5 5Z" />
+          <path d="M20 16L20.8 17.6L22.4 16.8L20.8 17.6L20 19.2L19.2 17.6L17.6 16.8L19.2 17.6Z" />
         </svg>
       ),
       requiresPro: false,
@@ -134,7 +134,7 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
     },
     {
       id: "google-calendar",
-      label: "Calendar",
+      label: "Google Calendar",
       icon: (
         <svg
           className="w-5 h-5"
