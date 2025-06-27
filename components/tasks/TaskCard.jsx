@@ -13,8 +13,9 @@ import {
   ActionButton,
 } from "@/components/ui/Icons";
 
-const TaskCard = ({ task, onEdit }) => {
+const TaskCard = ({ task, onEdit, onDragStart, onDragEnd }) => {
   const [maxHeight, setMaxHeight] = useReactState("none");
+  const [isDragging, setIsDragging] = useReactState(false);
   const cardRef = useRef(null);
 
   useLayoutEffect(() => {
@@ -62,9 +63,42 @@ const TaskCard = ({ task, onEdit }) => {
     }
   };
 
+  const handleDragStart = (e) => {
+    setIsDragging(true);
+    e.dataTransfer.setData("text/plain", task.id);
+    e.dataTransfer.effectAllowed = "move";
+
+    // Create a custom drag image
+    const dragImage = cardRef.current.cloneNode(true);
+    dragImage.style.opacity = "0.8";
+    dragImage.style.transform = "rotate(5deg)";
+    dragImage.style.maxHeight = "none";
+    document.body.appendChild(dragImage);
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
+
+    // Remove the drag image after a short delay
+    setTimeout(() => {
+      document.body.removeChild(dragImage);
+    }, 0);
+
+    if (onDragStart) {
+      onDragStart(task);
+    }
+  };
+
+  const handleDragEnd = (e) => {
+    setIsDragging(false);
+    if (onDragEnd) {
+      onDragEnd(task);
+    }
+  };
+
   return (
     <div
       ref={cardRef}
+      draggable={!task.isDone} // Only allow dragging if task is not done
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
       style={{
         maxHeight,
         overflow: "hidden",
@@ -74,6 +108,12 @@ const TaskCard = ({ task, onEdit }) => {
         task.isDone
           ? "bg-green-50 border border-green-300 opacity-80"
           : "bg-white"
+      } ${
+        isDragging
+          ? "opacity-50 transform rotate-2 shadow-lg cursor-grabbing"
+          : !task.isDone
+          ? "hover:shadow-md cursor-grab"
+          : ""
       }`}
     >
       <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
