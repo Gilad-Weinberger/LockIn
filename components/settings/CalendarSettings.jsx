@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { canAccessFeature } from "@/lib/utils/subscription-utils";
 import { connectGoogleCalendar } from "@/lib/functions/googleCalendarFunctions";
-import ProPaywall from "@/components/settings/ProPaywall";
+import { useRouter } from "next/navigation";
 
 const CalendarSettings = () => {
   const { user } = useAuth();
@@ -19,6 +19,7 @@ const CalendarSettings = () => {
   });
   const [showPaywall, setShowPaywall] = useState(false);
   const [canUseFeature, setCanUseFeature] = useState(false);
+  const router = useRouter();
 
   // Format date as dd/mm/yyyy
   const formatConnectionDate = (connectedAt) => {
@@ -75,6 +76,12 @@ const CalendarSettings = () => {
 
     loadSettings();
   }, [user]);
+
+  useEffect(() => {
+    if (showPaywall) {
+      router.push("/settings/billing");
+    }
+  }, [showPaywall, router]);
 
   const handleConnect = async () => {
     if (!canUseFeature) {
@@ -445,14 +452,7 @@ const CalendarSettings = () => {
         </div>
       </div>
 
-      {/* Pro Paywall Modal */}
-      {showPaywall && (
-        <ProPaywall
-          onClose={() => setShowPaywall(false)}
-          feature="Google Calendar Integration"
-          description="Sync your tasks with Google Calendar and view all your events in one place."
-        />
-      )}
+      {/* Paywall handled via redirect above */}
     </>
   );
 };

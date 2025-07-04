@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { canAccessFeature } from "@/lib/utils/subscription-utils";
-import ProPaywall from "@/components/settings/ProPaywall";
+import { useRouter } from "next/navigation";
 
 const GoogleCalendarSettings = () => {
   const { user } = useAuth();
@@ -15,6 +15,7 @@ const GoogleCalendarSettings = () => {
   const [connectedAt, setConnectedAt] = useState(null);
   const [showPaywall, setShowPaywall] = useState(false);
   const [canUseFeature, setCanUseFeature] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const checkFeatureAndLoadSettings = async () => {
@@ -45,6 +46,13 @@ const GoogleCalendarSettings = () => {
 
     checkFeatureAndLoadSettings();
   }, [user]);
+
+  // Redirect to billing whenever paywall is triggered
+  useEffect(() => {
+    if (showPaywall) {
+      router.push("/settings/billing");
+    }
+  }, [showPaywall, router]);
 
   // Note: Google Calendar connection completion is now handled by useGoogleCalendarConnection hook on the calendar page
 
@@ -338,13 +346,7 @@ const GoogleCalendarSettings = () => {
         </div>
       </div>
 
-      {showPaywall && (
-        <ProPaywall
-          onClose={() => setShowPaywall(false)}
-          feature="Google Calendar Integration"
-          description="Automatically sync your tasks with Google Calendar and never miss a deadline."
-        />
-      )}
+      {/* Paywall handled via redirect above */}
     </>
   );
 };

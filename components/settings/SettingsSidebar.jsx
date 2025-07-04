@@ -1,21 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
   hasSubscriptionLevel,
   SUBSCRIPTION_LEVELS,
 } from "@/lib/utils/subscription-utils";
 
-const SettingsSidebar = ({ activeSection, onSectionChange }) => {
+const SettingsSidebar = () => {
+  const pathname = usePathname();
+  const activeSection = pathname.split("/")[2] || "profile";
+
   const { user } = useAuth();
   const [isProfessionalUser, setIsProfessionalUser] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkSubscription = async () => {
       if (!user?.uid) {
-        setLoading(false);
+        setIsProfessionalUser(false);
         return;
       }
 
@@ -28,15 +32,13 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
       } catch (error) {
         console.error("Error checking subscription level:", error);
         setIsProfessionalUser(false);
-      } finally {
-        setLoading(false);
       }
     };
 
     checkSubscription();
   }, [user?.uid]);
 
-  const getAllSettingsItems = () => [
+  const settingsItems = [
     {
       id: "profile",
       label: "Profile",
@@ -160,13 +162,6 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
     },
   ];
 
-  // Show all settings items, but disable pro features for non-pro users
-  const getVisibleSettingsItems = () => {
-    return getAllSettingsItems(); // Always show all items
-  };
-
-  const settingsItems = getVisibleSettingsItems();
-
   return (
     <div className="p-6">
       {/* Header */}
@@ -179,45 +174,50 @@ const SettingsSidebar = ({ activeSection, onSectionChange }) => {
 
       {/* Navigation */}
       <nav className="space-y-2">
-        {settingsItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() =>
-              item.requiresPro && !isProfessionalUser
-                ? null
-                : onSectionChange(item.id)
-            }
-            disabled={item.requiresPro && !isProfessionalUser}
-            className={`
-              w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative
-              ${
-                activeSection === item.id
+        {settingsItems.map((item) => {
+          const isActive = activeSection === item.id;
+          const isDisabled = item.requiresPro && !isProfessionalUser;
+
+          const commonClasses =
+            "w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative";
+
+          if (isDisabled) {
+            return (
+              <Link
+                key={item.id}
+                href="/settings/billing"
+                className={`${commonClasses} text-gray-600 hover:text-gray-900 hover:bg-gray-50`}
+              >
+                <span className="mr-3 text-gray-400">{item.icon}</span>
+                {item.label}
+                <span className="ml-auto text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full">
+                  PRO
+                </span>
+              </Link>
+            );
+          }
+
+          return (
+            <Link
+              key={item.id}
+              href={`/settings/${item.id}`}
+              className={`${commonClasses} ${
+                isActive
                   ? "bg-blue-50 text-blue-700 border border-blue-200"
-                  : item.requiresPro && !isProfessionalUser
-                  ? "text-gray-400 bg-gray-50 cursor-not-allowed"
                   : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }
-            `}
-          >
-            <span
-              className={`mr-3 ${
-                activeSection === item.id
-                  ? "text-blue-700"
-                  : item.requiresPro && !isProfessionalUser
-                  ? "text-gray-300"
-                  : "text-gray-400"
               }`}
             >
-              {item.icon}
-            </span>
-            {item.label}
-            {item.requiresPro && !isProfessionalUser && (
-              <span className="ml-auto text-xs bg-gradient-to-r from-blue-500 to-purple-600 text-white px-2 py-1 rounded-full">
-                PRO
+              <span
+                className={`mr-3 ${
+                  isActive ? "text-blue-700" : "text-gray-400"
+                }`}
+              >
+                {item.icon}
               </span>
-            )}
-          </button>
-        ))}
+              {item.label}
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );

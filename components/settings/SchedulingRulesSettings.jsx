@@ -7,7 +7,7 @@ import {
   hasSubscriptionLevel,
   SUBSCRIPTION_LEVELS,
 } from "@/lib/utils/subscription-utils";
-import ProPaywall from "./ProPaywall";
+import Link from "next/link";
 
 const SchedulingRulesSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
@@ -86,10 +86,22 @@ const SchedulingRulesSettings = () => {
   // Show paywall for free users
   if (!isProfessionalUser) {
     return (
-      <ProPaywall
-        featureName="Custom Scheduling Rules"
-        description="Define intelligent scheduling preferences to automatically organize your prioritized tasks based on your energy levels and optimal work patterns."
-      />
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          Custom Scheduling Rules - Pro Feature
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Define intelligent scheduling preferences to automatically organize
+          your prioritized tasks based on your energy levels and optimal work
+          patterns.
+        </p>
+        <Link
+          href="/settings/billing"
+          className="inline-block px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200"
+        >
+          Upgrade to Pro
+        </Link>
+      </div>
     );
   }
 

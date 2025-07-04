@@ -84,7 +84,7 @@ const UserDropdownMenu = ({ user, userData, onLogout }) => {
             <p className="text-sm text-gray-500 truncate">{user?.email}</p>
           </div>
           <Link
-            href="/settings"
+            href="/settings/profile"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
             onClick={() => setIsUserMenuOpen(false)}
           >

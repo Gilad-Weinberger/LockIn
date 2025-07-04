@@ -3,14 +3,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { canAccessFeature } from "@/lib/utils/subscription-utils";
-import ProPaywall from "@/components/settings/ProPaywall";
 import { useRouter } from "next/navigation";
 
 const GoogleCalendarButton = ({ isLoading = false }) => {
   const { user } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [showPaywall, setShowPaywall] = useState(false);
   const [canUseFeature, setCanUseFeature] = useState(false);
   const router = useRouter();
 
@@ -89,7 +87,7 @@ const GoogleCalendarButton = ({ isLoading = false }) => {
 
   const handleConnect = async () => {
     if (!canUseFeature) {
-      router.push("/settings");
+      router.push("/settings/billing");
       return;
     }
 
@@ -180,14 +178,6 @@ const GoogleCalendarButton = ({ isLoading = false }) => {
         </span>
         {!canUseFeature && <ProBadge />}
       </button>
-
-      {showPaywall && (
-        <ProPaywall
-          onClose={() => setShowPaywall(false)}
-          feature="Google Calendar Integration"
-          description="Automatically sync your tasks with Google Calendar and never miss a deadline."
-        />
-      )}
     </>
   );
 };

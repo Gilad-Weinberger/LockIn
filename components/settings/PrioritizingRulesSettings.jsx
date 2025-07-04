@@ -7,7 +7,7 @@ import {
   hasSubscriptionLevel,
   SUBSCRIPTION_LEVELS,
 } from "@/lib/utils/subscription-utils";
-import ProPaywall from "./ProPaywall";
+import Link from "next/link";
 
 const PrioritizingRulesSettings = () => {
   const { user, userData, refreshUserData } = useAuth();
@@ -83,13 +83,24 @@ const PrioritizingRulesSettings = () => {
     );
   }
 
-  // Show paywall for free users
+  // Show upgrade link for free users
   if (!isProfessionalUser) {
     return (
-      <ProPaywall
-        featureName="Custom Prioritizing Rules"
-        description="Create personalized AI rules to automatically prioritize your tasks based on your unique workflow and preferences."
-      />
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          Custom Prioritizing Rules - Pro Feature
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Create personalized AI rules to automatically prioritize your tasks
+          based on your unique workflow and preferences.
+        </p>
+        <Link
+          href="/settings/billing"
+          className="inline-block px-6 py-3 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-200"
+        >
+          Upgrade to Pro
+        </Link>
+      </div>
     );
   }
 
