@@ -79,16 +79,6 @@ export async function POST(req) {
           console.error("User ID not found in user document");
         }
 
-        // Log the user who just paid for easier debugging
-        console.log(
-          "[LemonSqueezy] subscription_created webhook – userId:",
-          userId,
-          "customerId:",
-          customerId,
-          "variantId:",
-          variantId
-        );
-
         break;
       }
 
