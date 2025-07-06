@@ -16,7 +16,7 @@ export default function TermsOfService() {
           </h1>
 
           <p className="text-sm text-gray-600 mb-8">
-            <strong>Effective Date:</strong> June 25, 2025
+            <strong>Effective Date:</strong> June 25, 2025 
           </p>
 
           <p className="text-gray-700 leading-relaxed mb-8">
