@@ -5,7 +5,6 @@ import config from "@/lib/config";
 import {
   updateUserPaymentInfo,
   getUserData,
-  findUserByEmail,
   findUserByCustomerId,
 } from "@/lib/functions/userFunctions";
 
@@ -42,8 +41,7 @@ export async function POST(req) {
     switch (eventName) {
       case "subscription_created": {
         // ✅ Grant access to the subscription
-        const userId = payload.meta?.custom_data?.userId;
-        const email = payload.data.attributes.user_email;
+        const userId = payload.meta?.custom_data?.user_id;
         const variantId = payload.data.attributes.variant_id.toString();
 
         const plan = config.lemonsqueezy.plans.find(
@@ -54,7 +52,6 @@ export async function POST(req) {
           // Don't throw error, just log it and continue
         }
 
-        let userRef;
         let userDocData;
 
         // Get or create the user. userId is normally passed in the checkout session (custom_data) to identify the user when we get the webhook event
@@ -62,11 +59,6 @@ export async function POST(req) {
           userDocData = await getUserData(userId);
           if (!userDocData) {
             throw new Error("User not found with ID:", userId);
-          }
-        } else if (email) {
-          userDocData = await findUserByEmail(email);
-          if (!userDocData) {
-            throw new Error("No user found with email:", email);
           }
         } else {
           throw new Error("No user identification provided");
@@ -86,6 +78,16 @@ export async function POST(req) {
         } else {
           console.error("User ID not found in user document");
         }
+
+        // Log the user who just paid for easier debugging
+        console.log(
+          "[LemonSqueezy] subscription_created webhook – userId:",
+          userId,
+          "customerId:",
+          customerId,
+          "variantId:",
+          variantId
+        );
 
         break;
       }
