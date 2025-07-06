@@ -16,7 +16,7 @@ export default function PrivacyPolicy() {
           </h1>
 
           <p className="text-sm text-gray-600 mb-8">
-            <strong>Effective Date:</strong> September 17, 2024
+            <strong>Effective Date:</strong> June 25, 2025
           </p>
 
           <p className="text-gray-700 leading-relaxed mb-8">
@@ -243,6 +243,22 @@ export default function PrivacyPolicy() {
               </h2>
               <p className="text-gray-700 leading-relaxed">
                 This Privacy Policy is governed by the laws of Israel.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+                9. Support
+              </h2>
+              <p className="text-gray-700 leading-relaxed">
+                If you have any questions about this Privacy Policy or need
+                support, please contact us at{" "}
+                <a
+                  href="mailto:lockintasks.contact@gmail.com"
+                  className="text-blue-600 hover:text-blue-800 underline"
+                >
+                  lockintasks.contact@gmail.com
+                </a>
               </p>
             </section>
           </div>
